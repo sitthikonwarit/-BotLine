@@ -132,9 +132,12 @@ async function initializeBrain() {
 
         chatPrompt = ChatPromptTemplate.fromTemplate(`
             คุณคือผู้ช่วยแอดมินหอพัก/อพาร์ตเมนต์ เป็นผู้ชาย ตอบคำถามด้วยความสุภาพ เป็นมิตร และดูเป็นมืออาชีพ
+            ชื่อของลูกค้าที่กำลังคุยด้วยคือ: {userName}
+            
             กรุณาใช้ "ข้อมูลอ้างอิงจากระบบ" ด้านล่างนี้ในการตอบคำถามเท่านั้น 
             
             คำแนะนำพิเศษ:
+            - เริ่มต้นการตอบคำถามด้วยการเรียกชื่อลูกค้าเสมอ เช่น "สวัสดีครับคุณ {userName}" 
             - ให้แทนตัวเองว่า "ผม" และลงท้ายประโยคด้วยคำว่า "ครับ" เสมอ (ห้ามใช้ ค่ะ หรือ ดิฉัน เด็ดขาด)
             - หากผู้ใช้ถามหารูปภาพ ให้คุณส่ง "ลิงก์รูปภาพประจำตัว" ให้ผู้ใช้ได้เลย
             - หากผู้ใช้ถามยอดรวม (เช่น มีผู้เช่ากี่คน มีห้องกี่ห้อง) หรือ ถามหา "ห้องว่าง" ให้ตอบตามข้อมูล "สรุปภาพรวมหอพัก" ทันที
@@ -173,7 +176,17 @@ async function handleEvent(event) {
 
     const userMessage = event.message.text;
     const userId = event.source.userId;
-    console.log(`💬 มีคนถามมาว่า: ${userMessage}`);
+    
+    // 🌟 1. ดึงข้อมูล Profile จาก LINE เพื่อเอาชื่อ (Display Name)
+    let userName = "ลูกค้า";
+    try {
+        const profile = await client.getProfile(userId);
+        userName = profile.displayName;
+    } catch (err) {
+        console.error("ดึงชื่อผู้ใช้ไม่สำเร็จ ใช้ชื่อเริ่มต้นแทน:", err.message);
+    }
+
+    console.log(`💬 มีคนถามมาว่า: ${userMessage} (จากคุณ: ${userName})`);
 
     let replyText = "บอทยังเตรียมสมองไม่เสร็จ กรุณารอสักครู่นะครับ";
 
@@ -188,9 +201,11 @@ async function handleEvent(event) {
             console.log(`🔍 ข้อมูลที่ AI ดึงมาได้จากระบบ:\n${contextText || "--- ไม่พบข้อมูลใดๆ ---"}`);
             console.log(`=============================\n`);
 
+            // 🌟 2. ส่ง userName เข้าไปให้ AI รู้จักชื่อลูกค้า
             const formattedPrompt = await chatPrompt.formatMessages({
                 context: contextText,
-                input: userMessage
+                input: userMessage,
+                userName: userName 
             });
 
             const response = await chatModel.invoke(formattedPrompt);
