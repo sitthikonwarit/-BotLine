@@ -1,0 +1,30 @@
+name: Auto Deploy Bot
+
+on:
+  push:
+    branches:
+      - main  # หรือเปลี่ยนเป็น master ถ้า branch หลักคุณชื่อ master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to Ubuntu Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            # เปลี่ยน /path/to/your/bot เป็นที่อยู่โฟลเดอร์บอทบนเซิร์ฟเวอร์ของคุณจริงๆ
+            cd BotLine/
+            
+            # ดึงโค้ดล่าสุด
+            git pull origin main
+            
+            # อัปเดตแพ็กเกจเผื่อมีการลงเครื่องมือใหม่
+            npm install --legacy-peer-deps
+            
+            # รีสตาร์ทบอท
+            pm2 restart line-bot
