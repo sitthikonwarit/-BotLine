@@ -1,5 +1,7 @@
 const express = require('express');
 const axios = require('axios');
+const cors = require('cors');
+
 
 const GAS_URL = process.env.GAS_URL; // ใส่ URL ของคุณ
 const MEMBER_MENU_ID = process.env.MEMBER_MENU_ID; // ใส่ ID ของ Member Menu ที่ได้จากการสร้างเมนู
