@@ -1,0 +1,3393 @@
+<div id="meterGroupCard" class="custom-card">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+    <h5 class="form-section-title mb-0" style="border-bottom: none;">รายการจดมิเตอร์</h5>
+    <div class="d-flex align-items-center flex-wrap gap-2">
+      <button type="button" id="exportMeterBtn" class="btn btn-outline-secondary d-inline-flex align-items-center">
+        <i class="fas fa-file-export me-2"></i>
+        <span class="btn-text">Export</span>
+      </button>
+      <button type="button" id="importMeterBtn" class="btn btn-outline-secondary d-inline-flex align-items-center">
+          <i class="fas fa-file-import me-2"></i>
+          <span class="btn-text">Import</span>
+        </button>
+
+      <input type="file" id="meterCsvInput" accept=".csv" style="display: none;">
+      <button id="showMeterFormBtn" class="btn btn-primary d-inline-flex align-items-center">
+        <i class="fas fa-plus me-2"></i>
+        <span class="btn-text">เพิ่มจดบันทึก</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="row g-2 mb-3 align-items-center">
+    <div class="col-12 col-lg">
+      <div class="search-container flex-grow-1">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchMeterGroup" class="form-control" placeholder="ค้นหาด้วยเดือน, ปี..." style="padding-left: 40px;">
+      </div>
+    </div>
+    <div class="col-12 col-md-auto">
+      <div class="d-flex align-items-center flex-shrink-0 gap-2">
+        <div class="btn-group" role="group" aria-label="View switch">
+          <button type="button" class="btn btn-outline-secondary view-btn-meter active" id="view-btn-meter-list" title="List View"><i class="fas fa-list"></i></button>
+          <button type="button" class="btn btn-outline-secondary view-btn-meter" id="view-btn-meter-grid" title="Grid View"><i class="fas fa-th-large"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nicescrollbar" style="max-height: 650px; overflow: auto;">
+    <div id="meter-group-container" class="mt-3">
+      <div class="text-center text-muted p-5">กำลังโหลดข้อมูลการจดมิเตอร์...</div>
+    </div>
+  </div>
+</div>
+
+<div id="meterDetailCard" class="custom-card" style="display: none;">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+    <h5 id="meter-detail-title" class="form-section-title mb-0" style="border-bottom: none;">รายละเอียด</h5>
+    <div class="d-flex gap-2">
+      <button id="printMeterDetailBtn" class="btn btn-outline-secondary d-inline-flex align-items-center">
+        <i class="fas fa-print me-2"></i>
+        <span class="btn-text">พิมพ์</span>
+      </button>
+
+      <button id="goToMeterEditBtn" class="btn btn-primary d-inline-flex align-items-center">
+        <i class="fas fa-edit me-2"></i>
+        <span class="btn-text">ไปที่หน้าแก้ไข</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="row g-2 mb-3 align-items-center no-print">
+    <div class="col-12 col-lg">
+      <div class="search-container flex-grow-1">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchMeterDetailRoom" class="form-control" placeholder="ค้นหาเลขห้อง, ผู้เช่า..." style="padding-left: 40px;">
+      </div>
+    </div>
+    <div class="col-12 col-md-auto" style="min-width: 250px;">
+      <select id="filterMeterDetailTower" class="select2" multiple="multiple" data-placeholder="กรองตามตึก">
+      </select>
+    </div>
+  </div>
+  <div class="table-responsive-wrapper mt-3 nicescrollbar" style="max-height: 538px; overflow: auto;">
+    <table class="table table-mainstyle table-hover" id="meter-detail-table">
+      <thead>
+        <tr>
+          <th class="text-center" style="width: 100px;">เลขห้อง</th>
+          <th>ผู้เช่า</th>
+          <th class="text-end" style="width: 100px;">
+            <i class="fas fa-tint text-primary me-1"></i>น้ำก่อน
+          </th>
+          <th class="text-end" style="width: 100px;">
+            <i class="fas fa-tint text-primary me-1"></i>น้ำนี้
+          </th>
+          <th class="text-end" style="width: 100px;">
+            <i class="fas fa-tint text-primary me-1"></i>หน่วย
+          </th>
+          <th class="text-end" style="width: 100px;">
+            <i class="fas fa-bolt text-warning me-1"></i>ไฟก่อน
+          </th>
+          <th class="text-end" style="width: 100px;">
+            <i class="fas fa-bolt text-warning me-1"></i>ไฟนี้
+          </th>
+          <th class="text-end" style="width: 100px;">
+            <i class="fas fa-bolt text-warning me-1"></i>หน่วย
+          </th>
+          <th class="text-end" style="width: 15%;">อัปเดตล่าสุด</th>
+        </tr>
+      </thead>
+      <tbody id="meter-detail-table-container">
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div id="meterFormCard" class="custom-card" style="display: none;">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+    <h5 id="meter-form-title" class="form-section-title mb-0" style="border-bottom: none;">เพิ่มจดบันทึก</h5>
+  </div>
+
+  <div class="row g-2 mb-3 align-items-center">
+    <div class="col-12 col-md-6">
+      <label for="meterYearSelect" class="form-label mb-1 small">ปี (พ.ศ.)<span class="text-danger">*</span></label>
+      <select id="meterYearSelect" class="form-select select2" style="width: 100%;">
+      </select>
+    </div>
+
+    <div class="col-12 col-md-6">
+      <label for="meterMonthSelect" class="form-label mb-1 small">เดือน<span class="text-danger">*</span></label>
+      <select id="meterMonthSelect" class="form-select select2" style="width: 100%;">
+      </select>
+    </div>
+
+    <div class="row g-2 mb-3 align-items-center">
+      <div class="col-12 col-lg">
+        <div class="search-container flex-grow-1">
+          <i class="fas fa-search"></i>
+          <input type="text" id="searchMeterRoom" class="form-control" placeholder="ค้นหาเลขห้อง, ผู้เช่า..." style="padding-left: 40px;">
+        </div>
+      </div>
+      <div class="col-12 col-md-auto " style="min-width: 250px;">
+        <select id="filterMeterTower" class="select2" multiple="multiple" data-placeholder="กรองตามตึก">
+      </select>
+      </div>
+    </div>
+
+    <div class="table-responsive-wrapper mt-3 nicescrollbar" style="max-height: 538px; overflow: auto;">
+      <table class="table table-mainstyle table-hover" id="meter-reading-table">
+        <thead>
+          <tr>
+            <th class="text-center" style="width: 100px;">เลขห้อง</th>
+            <th>ผู้เช่า</th>
+            <th class="text-end" style="width: 120px;">
+              <i class="fas fa-tint text-primary me-1"></i>น้ำก่อน
+            </th>
+            <th class="text-end" style="width: 120px;">
+              <i class="fas fa-tint text-primary me-1"></i>น้ำนี้
+            </th>
+            <th class="text-end" style="width: 100px;">
+              <i class="fas fa-tint text-primary me-1"></i>หน่วย
+            </th>
+            <th class="text-end" style="width: 120px;">
+              <i class="fas fa-bolt text-warning me-1"></i>ไฟก่อน
+            </th>
+            <th class="text-end" style="width: 120px;">
+              <i class="fas fa-bolt text-warning me-1"></i>ไฟนี้
+            </th>
+            <th class="text-end" style="width: 100px;">
+              <i class="fas fa-bolt text-warning me-1"></i>หน่วย
+            </th>
+            <th class="text-center" style="width: 80px;">จัดการ</th>
+          </tr>
+        </thead>
+        <tbody id="meter-reading-form-container">
+          <tr>
+            <td colspan="9" class="text-center text-muted p-5">กำลังโหลดข้อมูลห้องพัก...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col-12 text-center mt-4">
+      <button type="button" id="saveMeterReadingsBtn" class="btn btn-primary submit-btn"><i class="fas fa-paper-plane"></i>บันทึก</button>
+    </div>
+  </div>
+</div>
+
+
+
+<div class="modal fade" id="meterImportModal" tabindex="-1" aria-hidden="true" style="padding-top : 0px">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">นำเข้าข้อมูลจดมิเตอร์จาก CSV</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-2">
+
+        <div class="import-modal-body">
+          <div id="meter-import-view-upload">
+            <div id="meter-import-drop-area" class="import-drop-area">
+              <input type="file" id="meterCsvInput" class="d-none" accept=".csv">
+              <i class="fas fa-cloud-upload-alt upload-icon"></i>
+              <p class="mb-1 mt-3">ลากไฟล์มาวางที่นี่ หรือ <strong class="">คลิกเพื่อเลือกไฟล์</strong></p>
+              <small class="text-muted">รองรับไฟล์ .csv (UTF-8)</small>
+              <p id="meterFileNameDisplay" class="file-name-display mt-2 text-success fw-bold"></p>
+            </div>
+
+            <div class="template-download-link text-center mt-3">
+              <span class="text-muted">ยังไม่มีไฟล์?</span>
+              <a href="#" id="downloadMeterTemplateLink" class="text-decoration-none">ดาวน์โหลดเทมเพลตที่นี่</a>
+            </div>
+          </div>
+
+          <div id="meter-import-view-preview" style="display: none;">
+            <p class="preview-title">ตรวจสอบข้อมูลก่อนนำเข้า</p>
+            <div class="preview-table-container">
+              <table id="meter-preview-table" class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>เลขห้อง</th>
+                    <th><i class="fas fa-tint text-primary me-1"></i>ค่าน้ำ</th>
+                    <th><i class="fas fa-bolt text-warning me-1"></i>ค่าไฟ</th>
+                    <th>สถานะ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
+            </div>
+            <div class="preview-summary">
+              พบข้อมูลทั้งหมด <strong id="meter-preview-record-count">0</strong> รายการ
+            </div>
+            <div class="preview-actions">
+              <button type="button" id="meterCancelImportBtn" class="btn btn-outline-secondary">ยกเลิก</button>
+              <button type="button" id="meterConfirmImportBtn" class="btn btn-primary">ยืนยันการนำเข้า</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    let meterAppInitialized = false;
+    let allMeterReadings = [];
+    let currentMeterView = 'list';
+    let currentMeterState = { view: 'list', monthYear: null };
+    let currentImportRawData = [];
+    var meterPageTempCache = {};
+
+    // --- [ใหม่] ตัวแปรเก็บสถานะการปักหมุดของตาราง Meter ---
+    let meterTablePinningState = {
+        'เลขห้อง': 'left', // ปักซ้ายเป็นค่าเริ่มต้น
+        'ผู้เช่า': false,
+        'น้ำก่อน': false,
+        'น้ำนี้': false,
+        'หน่วยน้ำ': false,
+        'ไฟก่อน': false,
+        'ไฟนี้': false,
+        'หน่วยไฟ': false,
+        'จัดการ': 'right' // ปักขวาเป็นค่าเริ่มต้น
+    };
+
+    let meterDetailTablePinningState = {
+        'เลขห้อง': 'left', // ปักซ้ายเป็นค่าเริ่มต้น
+        'ผู้เช่า': false,
+        'น้ำก่อน': false,
+        'น้ำนี้': false,
+        'หน่วยน้ำ': false,
+        'ไฟก่อน': false,
+        'ไฟนี้': false,
+        'หน่วยไฟ': false,
+        'อัปเดตล่าสุด': 'right' // ปักขวาเป็นค่าเริ่มต้น
+    };
+
+    window.renderMeterGroups = renderMeterGroups;
+    window.renderMeterFormTable = renderMeterFormTable;
+
+
+    // ทำให้ฟังก์ชันนี้พร้อมใช้งานสำหรับ indexScript.html
+    window.initializeMeterApp = function ({ manageLoading = true, forceRefresh = false } = {}) {
+        if (meterAppInitialized && !forceRefresh) return Promise.resolve();
+
+        console.log("Initializing meter application (Fetching new data)...");
+        if (manageLoading) showLoading();
+
+        const meterPromise = new Promise((resolve, reject) => {
+            google.script.run
+                .withSuccessHandler(data => {
+                    console.log("Data received from getMeterReadings:", data);
+
+                    allMeterReadings = data || []; // อัพเดตตัวแปร Local ของ Meter Script
+                    window.allMeterReadings = allMeterReadings; // ✅ [เพิ่มบรรทัดนี้] ส่งค่าไปยัง Global เพื่อให้ Room Script เห็นด้วย
+
+                    console.log("Meter data loaded successfully.");
+                    meterAppInitialized = true;
+                    resolve();
+                })
+                .withFailureHandler(err => {
+                    console.error("Failed to load meter readings:", err);
+                    showError("ไม่สามารถโหลดข้อมูลการจดมิเตอร์ได้: " + err.message);
+                    reject(err);
+                })
+                .getMeterReadings();
+        });
+
+        return meterPromise;
+    }
+
+    window.setupMeterAppUI = function () {
+        console.log("Setting up Meter App UI (dependencies loaded)...");
+
+        setupMeterPageEventListeners();
+        populateMonthYearSelectors();
+
+        populateMeterTowerFilter();
+
+        doRestoreMeterView(currentMeterState);
+    }
+
+    // จัดการการเปลี่ยนหน้า (SPA Navigation)
+    window.restoreMeterView = function (state) {
+        if (!meterAppInitialized) {
+            // รอให้ app โหลดเสร็จก่อน
+            window.initializeMeterApp().then(() => doRestoreMeterView(state));
+        } else {
+            doRestoreMeterView(state);
+        }
+    }
+
+    function doRestoreMeterView(state) {
+        if (!state || !state.view) {
+            state = { view: 'list' };
+        }
+        currentMeterState = state;
+
+        if (state.view === 'form') {
+            showMeterFormView(state.monthYear, false);
+        } else if (state.view === 'details') {
+            showMeterDetailView(state.monthYear, false);
+        } else {
+            showMeterListView(false);
+        }
+    }
+
+    // =================================================================
+    // VIEW MANAGEMENT (List vs Details vs Form)
+    // =================================================================
+
+    function showMeterListView(pushHistory = true) {
+        currentMeterState = { page: 'meter', view: 'list', monthYear: null };
+
+        document.getElementById('meterGroupCard').style.display = 'block';
+        document.getElementById('meterDetailCard').style.display = 'none';
+        document.getElementById('meterFormCard').style.display = 'none';
+
+        // อัปเดต UI หลัก
+        document.getElementById('main-title').textContent = 'จดมิเตอร์';
+        document.getElementById('breadcrumb-container').innerHTML = `<nav aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item active" aria-current="page">จดมิเตอร์</li></ol></nav>`;
+
+        if (pushHistory) {
+            history.pushState(currentMeterState, 'จดมิเตอร์', '#meter');
+        }
+
+        renderMeterGroups(); // Render ใหม่ทุกครั้งที่กลับมาหน้านี้
+    }
+
+    function showMeterDetailView(monthYear, pushHistory = true) {
+        currentMeterState = { page: 'meter', view: 'details', monthYear: monthYear };
+
+        document.getElementById('meterGroupCard').style.display = 'none';
+        document.getElementById('meterDetailCard').style.display = 'block';
+        document.getElementById('meterFormCard').style.display = 'none';
+
+        const title = `รายละเอียด: ${monthYearToText(monthYear)}`;
+
+        document.getElementById('main-title').textContent = title;
+        document.getElementById('breadcrumb-container').innerHTML = `<nav aria-label="breadcrumb"><ol class="breadcrumb">
+<li class="breadcrumb-item"><a href="#" id="breadcrumb-back-to-meter-list">จดมิเตอร์</a></li>
+<li class="breadcrumb-item active" aria-current="page">${title}</li>
+</ol></nav>`;
+
+        // ผูก Event ให้ Breadcrumb
+        document.getElementById('breadcrumb-back-to-meter-list').addEventListener('click', (e) => {
+            e.preventDefault();
+            showMeterListView();
+        });
+
+        if (pushHistory) {
+            history.pushState(currentMeterState, title, '#meter');
+        }
+
+        // ตั้งค่าปุ่ม "ไปที่หน้าแก้ไข"
+        document.getElementById('goToMeterEditBtn').onclick = () => {
+            showMeterFormView(monthYear);
+        };
+
+        // ตั้งชื่อ Card
+        document.getElementById('meter-detail-title').textContent = title;
+
+        // Render ตารางแบบอ่านอย่างเดียว
+        renderMeterDetailTable(monthYear);
+    }
+
+    function showMeterFormView(monthYear, pushHistory = true) {
+        const isNew = !monthYear;
+
+        currentMeterState = { page: 'meter', view: 'form', monthYear: monthYear };
+
+        document.getElementById('meterGroupCard').style.display = 'none';
+        document.getElementById('meterDetailCard').style.display = 'none';
+        document.getElementById('meterFormCard').style.display = 'block';
+
+        // --- [แก้ไข] ปรับชื่อ Title ให้ตรงกับหน้ารายละเอียด ---
+        // หน้ารายละเอียดใช้: "รายละเอียด: [เดือน/ปี]"
+        // หน้าแก้ไขจึงควรเป็น: "แก้ไขรายละเอียด: [เดือน/ปี]"
+        const title = isNew ? 'เพิ่มจดบันทึกใหม่' : `แก้ไขรายละเอียด: ${monthYearToText(monthYear)}`;
+
+        document.getElementById('main-title').textContent = title;
+
+        // Breadcrumb
+        if (isNew) {
+            document.getElementById('breadcrumb-container').innerHTML = `<nav aria-label="breadcrumb"><ol class="breadcrumb">
+<li class="breadcrumb-item"><a href="#" id="breadcrumb-back-to-meter-list">จดมิเตอร์</a></li>
+<li class="breadcrumb-item active" aria-current="page">${title}</li>
+</ol></nav>`;
+
+            document.getElementById('breadcrumb-back-to-meter-list').addEventListener('click', (e) => { e.preventDefault(); showMeterListView(); });
+
+        } else {
+            const detailTitle = `รายละเอียด: ${monthYearToText(monthYear)}`;
+            document.getElementById('breadcrumb-container').innerHTML = `<nav aria-label="breadcrumb"><ol class="breadcrumb">
+<li class="breadcrumb-item"><a href="#" id="breadcrumb-back-to-meter-list">จดมิเตอร์</a></li>
+<li class="breadcrumb-item"><a href="#" id="breadcrumb-back-to-detail">${detailTitle}</a></li>
+<li class="breadcrumb-item active" aria-current="page">แก้ไขข้อมูล</li>
+</ol></nav>`;
+
+            document.getElementById('breadcrumb-back-to-meter-list').addEventListener('click', (e) => { e.preventDefault(); showMeterListView(); });
+            document.getElementById('breadcrumb-back-to-detail').addEventListener('click', (e) => { e.preventDefault(); showMeterDetailView(monthYear); });
+        }
+
+        if (pushHistory) {
+            const historyState = isNew ? { page: 'meter', view: 'form', monthYear: null } : currentMeterState;
+            history.pushState(historyState, title, '#meter');
+        }
+
+        setupFormForMonth(monthYear);
+    }
+
+    // =================================================================
+    // EVENT LISTENERS (Setup)
+    // =================================================================
+
+    function setupMeterPageEventListeners() {
+        // View Switchers (List page)
+        document.getElementById('view-btn-meter-list').addEventListener('click', () => {
+            currentMeterView = 'list';
+            document.getElementById('view-btn-meter-list').classList.add('active');
+            document.getElementById('view-btn-meter-grid').classList.remove('active');
+            renderMeterGroups();
+        });
+        document.getElementById('view-btn-meter-grid').addEventListener('click', () => {
+            currentMeterView = 'grid';
+            document.getElementById('view-btn-meter-list').classList.remove('active');
+            document.getElementById('view-btn-meter-grid').classList.add('active');
+            renderMeterGroups();
+        });
+
+        // ปุ่ม "เพิ่มจดบันทึก"
+        document.getElementById('showMeterFormBtn').addEventListener('click', () => {
+            showMeterFormView(null);
+        });
+
+        // ปุ่ม "บันทึกข้อมูล"
+        document.getElementById('saveMeterReadingsBtn').addEventListener('click', handleSaveMeterReadings);
+
+        // --- [ส่วนที่แก้ไขสำคัญ] ใช้ jQuery .on('change') สำหรับ Select2 ---
+
+        // เมื่อเปลี่ยน "ปี"
+        $('#meterYearSelect').on('change', function () {
+            // ตรวจสอบว่า Dropdown ไม่ได้ถูกปิดการใช้งาน (disabled)
+            if (!$(this).prop('disabled')) {
+                console.log("Year changed via Select2");
+                updateAvailableMonths(); // คำนวณเดือนใหม่
+
+                // รีเซ็ตค่าเดือนให้เป็นว่าง เพื่อให้คนเลือกใหม่
+                $('#meterMonthSelect').val(null).trigger('change');
+
+                renderMeterFormTable(null, null); // เคลียร์ตาราง
+            }
+        });
+
+        // เมื่อเปลี่ยน "เดือน"
+        $('#meterMonthSelect').on('change', function () {
+            if (!$(this).prop('disabled')) {
+                const val = $(this).val();
+                if (val) { // ถ้าเลือกเดือนแล้ว (ไม่เป็นค่าว่าง)
+                    renderMeterFormTable(null, null);
+                }
+            }
+        });
+        // -----------------------------------------------------------
+
+        // Search/Filter
+        document.getElementById('searchMeterRoom').addEventListener('input', debounce(filterMeterFormTable));
+        $('#filterMeterTower').on('change', filterMeterFormTable);
+        document.getElementById('searchMeterGroup').addEventListener('input', debounce(renderMeterGroups));
+
+        document.getElementById('searchMeterDetailRoom').addEventListener('input', debounce(function () {
+            // เรียก render ใหม่ โดยส่ง monthYear ปัจจุบันเข้าไป
+            if (currentMeterState.view === 'details' && currentMeterState.monthYear) {
+                renderMeterDetailTable(currentMeterState.monthYear);
+            }
+        }));
+
+
+        $('#filterMeterDetailTower').on('change', function () {
+            if (currentMeterState.view === 'details' && currentMeterState.monthYear) {
+                renderMeterDetailTable(currentMeterState.monthYear);
+            }
+        });
+
+        document.getElementById('printMeterDetailBtn').addEventListener('click', () => {
+            window.print();
+        });
+
+        setupImportExportListeners();
+    }
+
+    function populateMonthYearSelectors() {
+        const yearSelect = $('#meterYearSelect'); // ใช้ jQuery
+        const currentYear = new Date().getFullYear();
+        const currentThaiYear = currentYear + 543;
+
+        yearSelect.empty();
+        for (let i = 0; i <= 2; i++) {
+            const year = currentThaiYear - i;
+            yearSelect.append(new Option(year, year));
+        }
+        yearSelect.val(currentThaiYear);
+
+        // เริ่มต้น Select2 สำหรับ Year (มีช่องค้นหา)
+        yearSelect.select2({
+            theme: "bootstrap-5",
+            width: '100%',
+            placeholder: "เลือกปี..."
+        });
+
+        // เริ่มต้น Select2 สำหรับ Month (มีช่องค้นหา)
+        $('#meterMonthSelect').select2({
+            theme: "bootstrap-5",
+            width: '100%',
+            placeholder: "เลือกเดือน..."
+        });
+
+        // เรียกฟังก์ชันเพื่อสร้าง Option เดือน
+        updateAvailableMonths();
+    }
+
+    function updateAvailableMonths(forceIncludeMonth = null) {
+        const monthSelect = $('#meterMonthSelect'); // ใช้ jQuery
+        const yearSelect = $('#meterYearSelect'); // ใช้ jQuery
+
+        const selectedThaiYear = parseInt(yearSelect.val(), 10);
+        const selectedYearAD = selectedThaiYear - 543;
+
+        const thaiMonths = [
+            "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+            "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+        ];
+
+        // หาเดือนที่มีข้อมูลอยู่แล้วในปีที่เลือก
+        const existingMonths = new Set();
+        allMeterReadings.forEach(group => {
+            if (!group.monthYear) return;
+            const [m, y] = group.monthYear.split('/');
+            if (parseInt(y, 10) === selectedYearAD) {
+                existingMonths.add(parseInt(m, 10));
+            }
+        });
+
+        // ล้าง Option เก่า
+        monthSelect.empty();
+
+        // [สำคัญ] เพิ่ม Option ว่างไว้เป็นอันแรก เพื่อให้ Placeholder ทำงาน
+        monthSelect.append('<option></option>');
+
+        let hasOption = false;
+
+        thaiMonths.forEach((monthName, index) => {
+            const monthNum = index + 1;
+            const monthValue = String(monthNum).padStart(2, '0');
+
+            const isExisting = existingMonths.has(monthNum);
+            const isForced = forceIncludeMonth && parseInt(forceIncludeMonth) === monthNum;
+
+            if (!isExisting || isForced) {
+                const option = new Option(monthName, monthValue, false, false);
+                monthSelect.append(option);
+                hasOption = true;
+            }
+        });
+
+        if (!hasOption && !forceIncludeMonth) {
+            // ถ้าเต็มทุกเดือนแล้ว
+            monthSelect.prop("disabled", true);
+        } else if (!forceIncludeMonth) {
+            monthSelect.prop("disabled", false);
+        }
+
+        // แจ้ง Select2 ว่ามีการเปลี่ยนแปลง (แต่ไม่ต้อง trigger change เพื่อกัน loop)
+        // ใช้แค่การวาดใหม่ก็พอ
+    }
+
+    function populateMeterTowerFilter() {
+        if (typeof window.allTowers === 'undefined') {
+            console.warn("allTowers is not available for meter filter.");
+            return;
+        }
+
+        // สร้าง Options
+        const activeTowers = window.allTowers.filter(t => t.isActive);
+        const optionsHtml = activeTowers.map(t => `<option value="${t.id}">${t.name}</option>`).join('') +
+            '<option value="unassigned">ไม่ระบุตึก</option>';
+
+        // 1. สำหรับหน้า Form (เดิม)
+        const filterForm = $('#filterMeterTower');
+        filterForm.empty().append(optionsHtml);
+        filterForm.select2({
+            theme: "bootstrap-5",
+            placeholder: "กรองตามตึก...",
+            closeOnSelect: false,
+            width: '100%'
+        });
+
+        // 2. [NEW] สำหรับหน้า Detail (ใหม่)
+        const filterDetail = $('#filterMeterDetailTower');
+        filterDetail.empty().append(optionsHtml);
+        filterDetail.select2({
+            theme: "bootstrap-5",
+            placeholder: "กรองตามตึก...",
+            closeOnSelect: false,
+            width: '100%'
+        });
+    }
+
+
+    // =================================================================
+    // METER GROUP LISTING (View 1)
+    // =================================================================
+
+    function renderMeterGroups() {
+        const container = document.getElementById('meter-group-container');
+        container.className = `mt-3 view-${currentMeterView}`;
+
+        const searchTerm = document.getElementById('searchMeterGroup').value.toLowerCase();
+        let groups = allMeterReadings.filter(Boolean);
+
+        if (searchTerm) {
+            groups = groups.filter(group => {
+                const text = monthYearToText(group.monthYear);
+                return text.toLowerCase().includes(searchTerm);
+            });
+        }
+
+        if (groups.length === 0) {
+            container.innerHTML = '<div class="text-center text-muted p-5">ไม่พบรายการจดบันทึก</div>';
+            return;
+        }
+
+        groups.sort((a, b) => b.monthYear.localeCompare(a.monthYear));
+
+        const html = groups.map(group => {
+            const readings = group.data || [];
+
+            // นับห้องที่ขาดบันทึก จากข้อมูล Snapshot
+            const pendingCount = readings.filter(r => {
+                const isWaterActive = r.waterActive !== false;
+                const isElectricActive = r.electricActive !== false;
+                if (!isWaterActive && !isElectricActive) return false;
+                const waterPending = isWaterActive && (r.waterReading === null || r.waterReading === "" || r.waterReading === undefined);
+                const electricPending = isElectricActive && (r.electricReading === null || r.electricReading === "" || r.electricReading === undefined);
+                return waterPending || electricPending;
+            }).length;
+
+            const groupTitle = monthYearToText(group.monthYear);
+            const firstRecord = group.createdAt ? new Date(group.createdAt).toLocaleDateString('th-TH') : '-';
+            const lastUpdate = group.updatedAt ? new Date(group.updatedAt).toLocaleDateString('th-TH') : '-';
+
+            // จัดรูปแบบตัวเลข
+            const pendingDisplay = pendingCount > 0
+                ? `<span class="value pending text-danger">${pendingCount} ห้อง</span>`
+                : `<span class="value text-success"><i class="fas fa-check-circle"></i> ครบ</span>`;
+
+            return `
+     <div class="meter-group-card" data-month-year="${group.monthYear}">
+     <div class="meter-group-card-header">
+     <h5>${groupTitle}</h5>
+     </div>
+     <div class="meter-group-card-body">
+     <div class="stat-item">
+      <span class="label"><i class="fas fa-exclamation-triangle me-2 text-danger"></i>ขาดบันทึก</span>
+      ${pendingDisplay}
+     </div>
+     <div class="stat-item">
+      <span class="label"><i class="fas fa-calendar-plus me-2 text-success"></i>เริ่มบันทึก</span>
+      <span class="value">${firstRecord}</span>
+     </div>
+     <div class="stat-item">
+      <span class="label"><i class="fas fa-calendar-check me-2 text-primary"></i>ล่าสุด</span>
+      <span class="value">${lastUpdate}</span>
+     </div>
+     </div>
+     </div>
+     `;
+        }).join('');
+
+        container.innerHTML = html;
+
+        container.querySelectorAll('.meter-group-card').forEach(card => {
+            card.addEventListener('click', () => {
+                showMeterDetailView(card.dataset.monthYear);
+            });
+        });
+    }
+
+    // =================================================================
+    // METER READING DETAIL (View 2 - NEW)
+    // =================================================================
+
+function renderMeterDetailTable(monthYear) {
+        const container = $('#meter-detail-table-container');
+        container.parent().parent().addClass('table-mainstyle');
+
+        const groupData = allMeterReadings.find(g => g.monthYear === monthYear);
+
+        let roomsToRender = [];
+        if (groupData && groupData.data && groupData.data.length > 0) {
+            roomsToRender = groupData.data.map(reading => {
+                const realRoom = window.allRooms.find(r => r.id === reading.roomId);
+                return {
+                    id: reading.roomId,
+                    // ✅ [แก้ไข] ถ้ามีห้องจริงใช้เลขห้องจริง ถ้าไม่มี(ถูกลบ) ใช้เลขห้องที่บันทึกไว้ใน reading
+                    number: realRoom ? realRoom.number : (reading.roomNumber || 'ห้องเก่า(ลบแล้ว)'),
+                    towerId: reading.towerId || (realRoom ? realRoom.towerId : 'deleted'),
+                    tenantNameSnapshot: reading.tenantName,
+                    meterWaterActive: reading.waterActive !== undefined ? reading.waterActive : true,
+                    meterElectricActive: reading.electricActive !== undefined ? reading.electricActive : true,
+                    isDeleted: !realRoom // Flag ไว้บอกว่าห้องนี้ไม่มีในระบบปัจจุบันแล้ว
+                };
+            });
+        } else {
+            roomsToRender = window.allRooms;
+        }
+
+        if (roomsToRender.length === 0) {
+            container.html('<tr><td colspan="100%" class="text-center text-muted p-5">ไม่พบข้อมูลบันทึก</td></tr>');
+            return;
+        }
+
+        const readings = groupData?.data || [];
+        const readingsMap = new Map(readings.map(r => [r.roomId, r]));
+
+        // --- Filter Logic ---
+        const searchTerm = document.getElementById('searchMeterDetailRoom').value.toLowerCase();
+        const selectedTowers = $('#filterMeterDetailTower').val();
+        const filteredRooms = roomsToRender.filter(room => {
+            if (selectedTowers && selectedTowers.length > 0) {
+                const towerId = room.towerId || 'unassigned';
+                if (room.isDeleted && !selectedTowers.includes('deleted') && !selectedTowers.includes(towerId)) {
+                   // ถ้าเป็นห้องที่ถูกลบและไม่ได้เลือก filter 'deleted' หรือ tower เดิม ให้ผ่านไปก่อน (หรือจะจัดการแบบอื่นก็ได้)
+                } else if (!selectedTowers.includes(towerId)) return false;
+            }
+            if (searchTerm) {
+                const roomNum = String(room.number).toLowerCase();
+                const tName = (room.tenantNameSnapshot || '').toLowerCase();
+                if (!roomNum.includes(searchTerm) && !tName.includes(searchTerm)) return false;
+            }
+            return true;
+        });
+
+        if (filteredRooms.length === 0) {
+            container.html('<tr><td colspan="100%" class="text-center text-muted p-5">ไม่พบห้องพักที่ตรงตามเงื่อนไข</td></tr>');
+            return;
+        }
+
+        const sortedRooms = filteredRooms.sort((a, b) => String(a.number).localeCompare(String(b.number), undefined, { numeric: true }));
+
+        // ... [ส่วน Helper Functions createMeterHtml, createUsageHtml คงเดิม] ...
+        const createMeterHtml = (active, val) => {
+            if (!active) return '<span class="meter-disabled-text">ปิดใช้งาน</span>';
+            if (val === null || val === undefined || val === '' || Number.isNaN(Number(val))) return '-';
+            return parseInt(val, 10);
+        };
+        const createUsageHtml = (active, currentUsage, trendHtml = '') => {
+            if (!active) return '<span class="meter-disabled-text">ปิดใช้งาน</span>';
+            if (currentUsage !== null && !isNaN(currentUsage)) {
+                return `<div class="d-flex align-items-center justify-content-end"><span class="room-cell fw-bold">${currentUsage}</span>${trendHtml}</div>`;
+            }
+            return '-';
+        };
+
+        // --- Header ---
+      const columnConfig = [
+            { header: 'เลขห้อง', key: 'roomNumber', class: 'text-center fw-bold', pinnable: true },
+            { header: 'ผู้เช่า', key: 'tenant', pinnable: true },
+            
+            { header: 'ไฟก่อน', key: 'electricPrev', class: 'text-end', pinnable: true },
+            { header: 'ไฟนี้', key: 'electricCurr', class: 'text-end', pinnable: true },
+            { header: 'หน่วยไฟ', key: 'electricUnit', class: 'text-end', pinnable: true },
+            { header: 'น้ำก่อน', key: 'waterPrev', class: 'text-end', pinnable: true },
+            { header: 'น้ำนี้', key: 'waterCurr', class: 'text-end', pinnable: true },
+            { header: 'หน่วยน้ำ', key: 'waterUnit', class: 'text-end', pinnable: true },
+            // ------------------------------------
+            { header: 'อัปเดตล่าสุด', key: 'lastUpdated', class: 'text-end', pinnable: true }
+        ];
+
+        // ... [ส่วนจัดเรียง Column Header คงเดิม] ...
+        const leftPinnedCols = []; const rightPinnedCols = []; const normalCols = [];
+        columnConfig.forEach(col => {
+            const pinState = meterDetailTablePinningState[col.header];
+            if (pinState === 'left') leftPinnedCols.push(col);
+            else if (pinState === 'right') rightPinnedCols.push(col);
+            else normalCols.push(col);
+        });
+        const orderedColumns = [...leftPinnedCols, ...normalCols, ...rightPinnedCols];
+
+        const headerHtml = orderedColumns.map(col => {
+            const pinState = meterDetailTablePinningState[col.header];
+            let pinContainerClass = '', pinIconClass = '';
+            if (pinState === 'left') { pinContainerClass = 'pinned pinned-left'; pinIconClass = 'active-left'; }
+            else if (pinState === 'right') { pinContainerClass = 'pinned pinned-right'; pinIconClass = 'active-right'; }
+            const pinIcon = col.pinnable ? `<i class="fas fa-thumbtack pin-icon ${pinIconClass}" data-column-header="${col.header}" data-table-type="detail" onclick="showMeterPinningMenu(this, event)"></i>` : '';
+            return `<th class="${col.class || ''} ${pinContainerClass}">${col.header}${pinIcon}</th>`;
+        }).join('');
+        container.parent().find('thead').html(`<tr>${headerHtml}</tr>`);
+
+        // --- Body ---
+        const bodyHtml = sortedRooms.map(room => {
+            const currentReading = readingsMap.get(room.id) || {};
+            const lastWater = findPreviousReading(monthYear, room.id, 'water');
+            const lastElectric = findPreviousReading(monthYear, room.id, 'electric');
+
+            const displayTenantName = room.tenantNameSnapshot;
+            const tenantHtml = (displayTenantName && displayTenantName !== '') ? `<span class="text-dark">${displayTenantName}</span>` : '<em class="text-muted">ห้องว่าง</em>';
+            const lastUpdatedHtml = currentReading.lastUpdated ? formatThaiDateTime(currentReading.lastUpdated) : '<span class="text-muted">-</span>';
+
+            let roomNumberDisplay = room.number;
+            // ✅ [เพิ่ม] แสดงสัญลักษณ์ถ้าเป็นห้องที่ถูกลบ
+            if (room.isDeleted) roomNumberDisplay = `<span class="text-danger" title="ห้องนี้ถูกลบไปแล้ว แต่มีประวัติการจด">${room.number} <i class="fas fa-trash-alt small"></i></span>`;
+
+            // ... [ส่วนคำนวณ Water/Electric เหมือนเดิม] ...
+            let waterStartVal = parseInt(currentReading.waterbefore, 10);
+            if (isNaN(waterStartVal) && lastWater) waterStartVal = lastWater.value;
+            let waterAlertHtml = '';
+            if (lastWater && lastWater.isSkipped && isNaN(parseInt(currentReading.waterbefore, 10))) {
+                waterAlertHtml = `<i class="fas fa-history text-warning ms-1" style="font-size: 0.8em; cursor: help;" title="ยอดข้ามเดือน มาจาก ${lastWater.monthYear}"></i>`;
+            }
+
+            let electricStartVal = parseInt(currentReading.electricbefore, 10);
+            if (isNaN(electricStartVal) && lastElectric) electricStartVal = lastElectric.value;
+            let electricAlertHtml = '';
+            if (lastElectric && lastElectric.isSkipped && isNaN(parseInt(currentReading.electricbefore, 10))) {
+                electricAlertHtml = `<i class="fas fa-history text-warning ms-1" style="font-size: 0.8em; cursor: help;" title="ยอดข้ามเดือน มาจาก ${lastElectric.monthYear}"></i>`;
+            }
+
+            const waterCurrentUsage = calculateMeterUsage(waterStartVal, parseInt(currentReading.waterReading, 10));
+            const electricCurrentUsage = calculateMeterUsage(electricStartVal, parseInt(currentReading.electricReading, 10));
+            
+            const prevWaterUsage = findPreviousUsageAmount(monthYear, room.id, 'water');
+            const waterTrendHtml = getTrendHtml(waterCurrentUsage, prevWaterUsage);
+            const prevElectricUsage = findPreviousUsageAmount(monthYear, room.id, 'electric');
+            const electricTrendHtml = getTrendHtml(electricCurrentUsage, prevElectricUsage);
+
+            const rowData = {
+                roomNumber: roomNumberDisplay,
+                tenant: tenantHtml,
+                waterPrev: createMeterHtml(room.meterWaterActive, waterStartVal) + waterAlertHtml,
+                waterCurr: createMeterHtml(room.meterWaterActive, currentReading.waterReading),
+                waterUnit: createUsageHtml(room.meterWaterActive, waterCurrentUsage, waterTrendHtml),
+                electricPrev: createMeterHtml(room.meterElectricActive, electricStartVal) + electricAlertHtml,
+                electricCurr: createMeterHtml(room.meterElectricActive, currentReading.electricReading),
+                electricUnit: createUsageHtml(room.meterElectricActive, electricCurrentUsage, electricTrendHtml),
+                lastUpdated: lastUpdatedHtml
+            };
+
+            const cellsHtml = orderedColumns.map(col => {
+                const pinState = meterDetailTablePinningState[col.header];
+                let pinClass = '';
+                if (pinState === 'left') pinClass = 'pinned pinned-left';
+                else if (pinState === 'right') pinClass = 'pinned pinned-right';
+                return `<td class="${col.class || ''} ${pinClass}">${rowData[col.key]}</td>`;
+            }).join('');
+
+            return `<tr data-room-id="${room.id}">${cellsHtml}</tr>`;
+        }).join('');
+
+        container.html(bodyHtml);
+        recalculateMeterTableOffsets(container.parent());
+    }
+
+
+
+    // =================================================================
+    // METER READING FORM (View 3 - formerly View 2)
+    // =================================================================
+
+    function setupFormForMonth(monthYear) {
+        meterPageTempCache = {};
+
+        $('#meter-reading-form-container').empty();
+        const isNew = !monthYear;
+        const monthSelect = $('#meterMonthSelect');
+        const yearSelect = $('#meterYearSelect');
+        const title = document.getElementById('meter-form-title');
+
+        if (isNew) {
+            title.textContent = 'เพิ่มจดบันทึกใหม่';
+
+            // เปิดการใช้งาน และ Trigger Select2
+            yearSelect.prop('disabled', false).trigger('change.select2');
+            monthSelect.prop('disabled', false).trigger('change.select2');
+
+            // ตั้งค่าปีปัจจุบัน
+            const today = new Date();
+            yearSelect.val(today.getFullYear() + 543).trigger('change'); // Trigger change เพื่อให้ไปคำนวณเดือนใหม่
+
+            // updateAvailableMonths() จะถูกเรียกผ่าน Event Listener ของ yearSelect ที่เราผูกไว้
+
+            // เช็คว่าเดือนว่างไหม
+            setTimeout(() => {
+                if (monthSelect.prop('disabled')) {
+                    renderMeterFormTable(null, null);
+                    Swal.fire('แจ้งเตือน', 'ปีนี้มีการจดบันทึกครบทุกเดือนแล้ว', 'info');
+                } else {
+                    renderMeterFormTable(null, null);
+                }
+            }, 50);
+
+        } else {
+            // โหมดแก้ไข
+            const [month, year] = monthYear.split('/');
+            title.textContent = `แก้ไข: ${monthYearToText(monthYear)}`;
+
+            // ตั้งค่าปี และ Trigger Select2
+            yearSelect.val(parseInt(year) + 543).trigger('change.select2');
+
+            // บังคับให้ Dropdown มีเดือนนี้อยู่
+            updateAvailableMonths(month);
+
+            // ตั้งค่าเดือน และ Trigger Select2
+            monthSelect.val(month).trigger('change.select2');
+
+            const group = allMeterReadings.find(g => g.monthYear === monthYear);
+
+            // ปิดการใช้งาน (Disable)
+            monthSelect.prop('disabled', true);
+            yearSelect.prop('disabled', true);
+
+            renderMeterFormTable(monthYear, group);
+        }
+    }
+
+
+function renderMeterFormTable(monthYear, groupData) {
+        const container = $('#meter-reading-form-container');
+
+        // 1. SAVE STATE (คงเดิม)
+        container.find('input[data-room-id]').each(function () {
+            const rId = $(this).data('room-id');
+            const type = $(this).data('type');
+            const val = $(this).val();
+            if (type === 'water' || type === 'electric') {
+                if (!meterPageTempCache[rId]) meterPageTempCache[rId] = {};
+                meterPageTempCache[rId][type] = val;
+            }
+        });
+
+        // CLEANUP Select2 (คงเดิม)
+        container.find('select.tenant-selector').each(function () {
+            if ($(this).data('select2')) $(this).select2('destroy');
+        });
+        $('.meter-temp-dropdown').closest('.select2-container').remove();
+        container.parent().addClass('meter-table');
+
+        // Prepare Tenants Options (คงเดิม)
+        const allTenants = window.tenantData || [];
+        let tenantOptionsBase = '<option value="">-- ว่าง / ระบุใหม่ --</option>';
+        allTenants.forEach(t => {
+            tenantOptionsBase += `<option value="${t.id}">${t.name} (ID: ${t.id})</option>`;
+        });
+
+        // ✅ [แก้ไข] Prepare Rooms Logic
+        let roomsToRender = [];
+        
+        if (groupData && groupData.data && groupData.data.length > 0) {
+            // --- กรณีแก้ไข (Edit Mode): ยึดข้อมูลจาก Data เก่า (groupData) เป็นหลัก ---
+            // เพื่อให้ห้องที่ถูกลบไปแล้ว แต่เคยมีการจดบันทึกไว้ ยังคงแสดงขึ้นมาให้แก้ไขได้
+            roomsToRender = groupData.data.map(reading => {
+                const realRoom = window.allRooms.find(r => r.id === reading.roomId);
+                if (realRoom) {
+                    // ห้องยังมีอยู่จริง: ใช้ข้อมูลล่าสุดจาก Room Setting ผสมกับข้อมูลที่บันทึกไว้
+                    return {
+                        ...realRoom,
+                        savedTenantId: reading.customerId,
+                        savedTenantName: reading.tenantName,
+                        meterWaterActive: reading.waterActive !== undefined ? reading.waterActive : realRoom.meterWaterActive,
+                        meterElectricActive: reading.electricActive !== undefined ? reading.electricActive : realRoom.meterElectricActive
+                    };
+                } else {
+                    // ห้องถูกลบไปแล้ว: ใช้ข้อมูลจาก Data เก่า (reading) สร้าง object จำลองขึ้นมา
+                    return {
+                        id: reading.roomId,
+                        number: reading.roomNumber || 'ห้องเก่า', // ดึงเลขห้องเก่ามาแสดง
+                        towerId: 'deleted',
+                        savedTenantId: reading.customerId,
+                        savedTenantName: reading.tenantName,
+                        meterWaterActive: reading.waterActive !== false,
+                        meterElectricActive: reading.electricActive !== false,
+                        isDeleted: true // Flag ไว้แสดง UI ว่าห้องถูกลบ
+                    };
+                }
+            });
+        } else {
+            // --- กรณีจดใหม่ (New Mode): ดูจากห้องที่มีอยู่จริงเท่านั้น ---
+            roomsToRender = window.allRooms.filter(r => r.isActive !== false).map(r => ({
+                ...r,
+                savedTenantId: r.tenant ? r.tenant.id : null,
+                savedTenantName: r.tenant ? r.tenant.name : null
+            }));
+        }
+
+        // --- กำหนดเดือนที่จะใช้ค้นหาย้อนหลัง (คงเดิม) ---
+        let targetMonthYear = monthYear;
+        if (!targetMonthYear) {
+            const m = $('#meterMonthSelect').val();
+            const y = parseInt($('#meterYearSelect').val()) - 543;
+            targetMonthYear = `${m}/${y}`;
+        }
+
+        const readings = groupData?.data || [];
+        const readingsMap = new Map(readings.map(r => [r.roomId, r]));
+
+        // --- Filtering Logic (คงเดิม) ---
+        const search = document.getElementById('searchMeterRoom').value.toLowerCase();
+        const selectedTowers = $('#filterMeterTower').val();
+        const filteredRooms = roomsToRender.filter(room => {
+            if (selectedTowers && selectedTowers.length > 0) {
+                const towerId = room.towerId || 'unassigned';
+                if (room.isDeleted && !selectedTowers.includes('deleted')) {
+                    // ถ้าเป็นห้องที่ลบ และไม่ได้ติ๊กเลือก deleted ให้ซ่อน
+                } else if (!selectedTowers.includes(towerId)) return false;
+            }
+            if (search) {
+                const tName = room.savedTenantName || '';
+                if (!String(room.number).toLowerCase().includes(search) && !tName.toLowerCase().includes(search)) return false;
+            }
+            return true;
+        });
+
+        if (filteredRooms.length === 0) {
+            container.html('<tr><td colspan="100%" class="text-center text-muted p-5">ไม่พบห้องพักที่ตรงตามเงื่อนไข</td></tr>');
+            return;
+        }
+
+        const sortedFilteredRooms = filteredRooms.sort((a, b) => String(a.number).localeCompare(String(b.number), undefined, { numeric: true }));
+
+        // ... [ส่วน Header Config และ Render เหมือนเดิม] ...
+        const columnConfig = [
+            { header: 'เลขห้อง', key: 'roomNumber', class: 'text-center fw-bold', pinnable: true },
+            { header: 'ผู้เช่า', key: 'tenantSelect', pinnable: true },
+            // --- [แก้ไข] สลับเอา ไฟ ขึ้นก่อน น้ำ ---
+            { header: 'ไฟก่อน', key: 'electricPrev', class: 'text-end', pinnable: true },
+            { header: 'ไฟนี้', key: 'electricCurr', class: 'text-end', pinnable: true },
+            { header: 'หน่วยไฟ', key: 'electricUnit', class: 'text-end', pinnable: true },
+            { header: 'น้ำก่อน', key: 'waterPrev', class: 'text-end', pinnable: true },
+            { header: 'น้ำนี้', key: 'waterCurr', class: 'text-end', pinnable: true },
+            { header: 'หน่วยน้ำ', key: 'waterUnit', class: 'text-end', pinnable: true },
+            // ------------------------------------
+            { header: 'จัดการ', key: 'actions', class: 'text-center', pinnable: true }
+        ];
+
+        // ... [ส่วนจัดเรียง Column Header คงเดิม] ...
+        const leftPinnedCols = []; const rightPinnedCols = []; const normalCols = [];
+        columnConfig.forEach(col => {
+            const pinState = meterTablePinningState[col.header];
+            if (pinState === 'left') leftPinnedCols.push(col);
+            else if (pinState === 'right') rightPinnedCols.push(col);
+            else normalCols.push(col);
+        });
+        const orderedColumns = [...leftPinnedCols, ...normalCols, ...rightPinnedCols];
+
+        const headerHtml = orderedColumns.map(col => {
+            const pinState = meterTablePinningState[col.header];
+            let pinContainerClass = '', pinIconClass = '';
+            if (pinState === 'left') { pinContainerClass = 'pinned pinned-left'; pinIconClass = 'active-left'; }
+            else if (pinState === 'right') { pinContainerClass = 'pinned pinned-right'; pinIconClass = 'active-right'; }
+            const pinIcon = col.pinnable ? `<i class="fas fa-thumbtack pin-icon ${pinIconClass}" data-column-header="${col.header}" data-table-type="form" onclick="showMeterPinningMenu(this, event)"></i>` : '';
+            return `<th class="${col.class || ''} ${pinContainerClass}">${col.header}${pinIcon}</th>`;
+        }).join('');
+        container.parent().find('thead').html(`<tr>${headerHtml}</tr>`);
+
+        // Body Render
+        const bodyHtml = sortedFilteredRooms.map(room => {
+            const currentReading = readingsMap.get(room.id) || {};
+
+            // 2. RESTORE STATE (WATER) (คงเดิม)
+            let currentWaterValue = currentReading.waterReading ?? '';
+            if (meterPageTempCache[room.id] && meterPageTempCache[room.id].water !== undefined) {
+                currentWaterValue = meterPageTempCache[room.id].water;
+            }
+
+            const lastWater = findPreviousReading(targetMonthYear, room.id, 'water');
+            const lastElectric = findPreviousReading(targetMonthYear, room.id, 'electric');
+
+            // ... [ส่วน Tenant Select HTML คงเดิม] ...
+            let tenantSelectHtml = `<div style="position: relative; width: 100%; min-width: 180px; max-width: 280px;">
+                    <select class="form-select tenant-selector" data-room-id="${room.id}" style="width: 100%;">
+                        ${tenantOptionsBase}
+                    </select>
+                </div>`;
+            const tempWrapper = $(tenantSelectHtml);
+            const tempSelect = tempWrapper.find('select');
+            const savedId = room.savedTenantId ? String(room.savedTenantId) : null;
+            const savedName = room.savedTenantName;
+            if (groupData && savedName && savedName !== '') {
+                const optionHtml = `<option value="_PRESERVE_NAME_" selected>${savedName}</option>`;
+                tempSelect.prepend(optionHtml);
+            } else if (savedId) {
+                if (tempSelect.find(`option[value="${savedId}"]`).length === 0) {
+                    const displayName = savedName || "(ไม่ทราบชื่อ)";
+                    tempSelect.append(`<option value="${savedId}">${displayName}</option>`);
+                }
+                tempSelect.find(`option[value="${savedId}"]`).attr('selected', 'selected');
+            } else {
+                tempSelect.find('option[value=""]').attr('selected', 'selected');
+            }
+            tenantSelectHtml = tempWrapper.prop('outerHTML');
+
+            const waterActiveNow = room.meterWaterActive;
+            const electricActiveNow = room.meterElectricActive;
+            let waterChangeBtn = '', electricChangeBtn = '';
+
+            // ... [ส่วน Logic การแสดงผลค่า Water/Electric เหมือนเดิมเป๊ะ] ...
+            let prevWaterValue = parseInt(currentReading.waterbefore, 10);
+            let waterPrevHtml, waterCurrentHtml, waterUsageHtml;
+            let waterSkippedMsg = '';
+
+            if (isNaN(prevWaterValue) && lastWater) {
+                prevWaterValue = lastWater.value;
+                if (lastWater.isSkipped) {
+                    waterSkippedMsg = `<div class="text-warning fst-italic text-end" style="font-size: 0.65rem; line-height: 1.2;"><i class="fas fa-history"></i> ยอด ${lastWater.monthYear}</div>`;
+                }
+            }
+
+            if (!waterActiveNow) {
+                waterPrevHtml = `<span class="meter-disabled-text">${isNaN(prevWaterValue) ? '-' : prevWaterValue}</span>`;
+                waterCurrentHtml = '<span class="meter-disabled-text">ปิดใช้งาน</span>';
+                waterUsageHtml = `<span class="meter-disabled-text">-</span>`;
+            } else {
+                const prevDisplay = isNaN(prevWaterValue) ? '-' : prevWaterValue;
+                if (waterActiveNow && !isNaN(prevWaterValue)) {
+                    waterChangeBtn = `<button type="button" class="btn btn-xs btn-outline-info w-100 btn-meter-sync" onclick="promptChangeMeter('water', '${room.id}', ${prevWaterValue})" title="แก้ไขเลขตั้งต้น"><i class="fas fa-tint"></i></button>`;
+                }
+                waterPrevHtml = `<div class="d-flex flex-column align-items-end justify-content-center"><input type="text" class="form-control-plaintext text-end p-0" value="${prevDisplay}" readonly data-room-id="${room.id}" data-type="water-prev" style="width: 60px; height: 24px;">${waterSkippedMsg}</div>`;
+                waterCurrentHtml = `<input type="number" class="form-control form-control-sm" data-room-id="${room.id}" data-type="water" value="${currentWaterValue}" pattern="[0-9]*" inputmode="numeric" enterkeyhint="next">`;
+                let waterInitialUsage = calculateMeterUsage(prevWaterValue, parseInt(currentWaterValue, 10));
+                const prevWaterUsageAmt = findPreviousUsageAmount(targetMonthYear, room.id, 'water');
+                let waterInitTrend = getTrendHtml(waterInitialUsage, prevWaterUsageAmt);
+                if (waterInitialUsage === null) waterInitialUsage = '-';
+                waterUsageHtml = `<span class="meter-usage-display fw-bold ${waterInitialUsage !== '-' ? 'text-primary' : ''}" data-room-id="${room.id}" data-type="water-usage"data-prior-usage="${prevWaterUsageAmt !== null ? prevWaterUsageAmt : ''}">${waterInitialUsage}${waterInitTrend}</span>`;
+            }
+
+            // Electric
+            let prevElectricValue = parseInt(currentReading.electricbefore, 10);
+            let currentElectricValue = currentReading.electricReading ?? '';
+            if (meterPageTempCache[room.id] && meterPageTempCache[room.id].electric !== undefined) {
+                currentElectricValue = meterPageTempCache[room.id].electric;
+            }
+            let electricPrevHtml, electricCurrentHtml, electricUsageHtml;
+            let electricSkippedMsg = '';
+
+            if (isNaN(prevElectricValue) && lastElectric) {
+                prevElectricValue = lastElectric.value;
+                if (lastElectric.isSkipped) {
+                    electricSkippedMsg = `<div class="text-warning fst-italic text-end" style="font-size: 0.65rem; line-height: 1.2;"><i class="fas fa-history"></i> ยอด ${lastElectric.monthYear}</div>`;
+                }
+            }
+
+            if (!electricActiveNow) {
+                electricPrevHtml = `<span class="meter-disabled-text">${isNaN(prevElectricValue) ? '-' : prevElectricValue}</span>`;
+                electricCurrentHtml = '<span class="meter-disabled-text">ปิดใช้งาน</span>';
+                electricUsageHtml = `<span class="meter-disabled-text">-</span>`;
+            } else {
+                const prevDisplay = isNaN(prevElectricValue) ? '-' : prevElectricValue;
+                if (electricActiveNow && !isNaN(prevElectricValue)) {
+                    electricChangeBtn = `<button type="button" class="btn btn-xs btn-outline-warning w-100 btn-meter-sync" onclick="promptChangeMeter('electric', '${room.id}', ${prevElectricValue})" title="แก้ไขเลขตั้งต้น"><i class="fas fa-bolt"></i></button>`;
+                }
+                electricPrevHtml = `<div class="d-flex flex-column align-items-end justify-content-center"><input type="text" class="form-control-plaintext text-end p-0" value="${prevDisplay}" readonly data-room-id="${room.id}" data-type="electric-prev" style="width: 60px; height: 24px;">${electricSkippedMsg}</div>`;
+                electricCurrentHtml = `<input type="number" class="form-control form-control-sm" data-room-id="${room.id}" data-type="electric" value="${currentElectricValue}" pattern="[0-9]*" inputmode="numeric" enterkeyhint="next">`;
+                let electricInitialUsage = calculateMeterUsage(prevElectricValue, parseInt(currentElectricValue, 10));
+                const prevElectricUsageAmt = findPreviousUsageAmount(targetMonthYear, room.id, 'electric');
+                let electricInitTrend = getTrendHtml(electricInitialUsage, prevElectricUsageAmt);
+                if (electricInitialUsage === null) electricInitialUsage = '-';
+                electricUsageHtml = `<span class="meter-usage-display fw-bold ${electricInitialUsage !== '-' ? 'text-primary' : ''}" data-room-id="${room.id}" data-type="electric-usage"data-prior-usage="${prevElectricUsageAmt !== null ? prevElectricUsageAmt : ''}">${electricInitialUsage}${electricInitTrend}</span>`;
+            }
+
+            const manageHtml = `<div class="d-flex flex-column gap-1 justify-content-center align-items-center">${waterChangeBtn}${electricChangeBtn}</div>`;
+
+            let roomNumberDisplay = room.number;
+            // ✅ [เพิ่ม] แสดงสัญลักษณ์ถ้าห้องถูกลบ
+            if (room.isDeleted) roomNumberDisplay = `<span class="text-danger">${room.number} <i class="fas fa-trash-alt small"></i></span>`;
+
+            const rowData = {
+                roomNumber: roomNumberDisplay,
+                tenantSelect: tenantSelectHtml,
+                waterPrev: waterPrevHtml, waterCurr: waterCurrentHtml, waterUnit: waterUsageHtml,
+                electricPrev: electricPrevHtml, electricCurr: electricCurrentHtml, electricUnit: electricUsageHtml,
+                actions: manageHtml
+            };
+
+            const cellsHtml = orderedColumns.map(col => {
+                const pinState = meterTablePinningState[col.header];
+                let pinClass = '';
+                if (pinState === 'left') pinClass = 'pinned pinned-left';
+                else if (pinState === 'right') pinClass = 'pinned pinned-right';
+                return `<td class="${col.class || ''} ${pinClass}">${rowData[col.key]}</td>`;
+            }).join('');
+
+            return `<tr data-room-id="${room.id}">${cellsHtml}</tr>`;
+        }).join('');
+
+        container.html(bodyHtml);
+        recalculateMeterTableOffsets(container.parent());
+        
+        // ... [ส่วน Event Listeners (input, keydown, select2) เหมือนเดิม] ...
+        container.find('input[type="number"]').on('input', updateUsageCalculation);
+        container.find('input[type="number"]').on('keydown', function (e) {
+            // ... (Logic Enter Key คงเดิม) ...
+            if (e.key === 'Enter' || e.keyCode === 13) {
+                 e.preventDefault();
+                 const currentInput = $(this);
+                 const currentType = currentInput.data('type');
+                 const currentRow = currentInput.closest('tr');
+                 const nextRow = currentRow.next('tr');
+                 if (nextRow.length > 0) {
+                     const nextInput = nextRow.find(`input[data-type="${currentType}"]`);
+                     if (nextInput.length > 0) { nextInput.focus(); nextInput.select(); }
+                     else {
+                         let nextValidRow = nextRow;
+                         while (nextValidRow.length > 0) {
+                             const tryInput = nextValidRow.find(`input[data-type="${currentType}"]`);
+                             if (tryInput.length > 0) { tryInput.focus(); tryInput.select(); return; }
+                             nextValidRow = nextValidRow.next('tr');
+                         }
+                         currentInput.blur();
+                     }
+                 } else { currentInput.blur(); }
+            }
+        });
+
+        // Initialize Select2 (คงเดิม)
+        container.find('.tenant-selector').select2({
+            theme: "bootstrap-5",
+            width: '100%',
+            placeholder: '-- ระบุผู้เช่า --',
+            allowClear: true,
+            dropdownParent: $('body'),
+            dropdownCssClass: 'meter-temp-dropdown',
+            tags: true,
+            createTag: function (params) {
+                const term = $.trim(params.term);
+                if (term === '') return null;
+                return { id: term, text: term, newOption: true };
+            }
+        });
+        $('.table-responsive-wrapper').off('scroll.closeSelect2').on('scroll.closeSelect2', function () {
+            $('.tenant-selector').select2('close');
+        });
+    }
+
+    function recalculateMeterTableOffsets($table) {
+        // ใช้ setTimeout เพื่อให้มั่นใจว่า DOM render เสร็จแล้วจึงคำนวณความกว้าง
+        setTimeout(() => {
+            const $headers = $table.find('thead th');
+            const $rows = $table.find('tbody tr');
+
+            // คำนวณฝั่งซ้าย (Left Pinned)
+            let leftOffset = 0;
+            $headers.filter('.pinned-left').each(function () {
+                const $th = $(this);
+                $th.css('left', `${leftOffset}px`);
+
+                const colIndex = $th.index();
+                $rows.each(function () {
+                    $(this).find('td').eq(colIndex).css('left', `${leftOffset}px`);
+                });
+
+                leftOffset += $th.outerWidth();
+            });
+
+            // คำนวณฝั่งขวา (Right Pinned)
+            let rightOffset = 0;
+            // ต้องย้อนกลับ (Reverse) เพราะ right: 0 เริ่มจากขวาสุด
+            $($headers.filter('.pinned-right').get().reverse()).each(function () {
+                const $th = $(this);
+                $th.css('right', `${rightOffset}px`);
+
+                const colIndex = $th.index();
+                $rows.each(function () {
+                    $(this).find('td').eq(colIndex).css('right', `${rightOffset}px`);
+                });
+
+                rightOffset += $th.outerWidth();
+            });
+        }, 0);
+    }
+
+    // ฟังก์ชันแสดงเมนูเมื่อคลิกไอคอน Pin
+    function showMeterPinningMenu(iconElement, event) {
+        event.stopPropagation();
+        event.preventDefault();
+
+        $('.pinning-menu').remove();
+
+        const $icon = $(iconElement);
+        const columnHeader = $icon.data('column-header');
+
+        // 1. ตรวจสอบว่าเป็นตารางไหน (Detail หรือ Form)
+        const tableType = $icon.data('table-type') || 'form'; // default เป็น form ถ้าไม่มีค่า
+
+        // 2. เลือก State ที่ถูกต้อง
+        let targetStateObj;
+        if (tableType === 'detail') {
+            targetStateObj = meterDetailTablePinningState;
+        } else {
+            targetStateObj = meterTablePinningState;
+        }
+
+        const currentState = targetStateObj[columnHeader];
+
+        const menuHtml = `
+  <ul class="pinning-menu">
+   <li data-action="left" class="${currentState === 'left' ? 'disabled' : ''}"><i class="fas fa-chevron-left fa-fw"></i> ปักหมุดซ้าย</li>
+   <li data-action="right" class="${currentState === 'right' ? 'disabled' : ''}"><i class="fas fa-chevron-right fa-fw"></i> ปักหมุดขวา</li>
+   <hr class="my-1">
+   <li data-action="unpin" class="${!currentState ? 'disabled' : ''}"><i class="fas fa-times fa-fw"></i> ปลดหมุด</li>
+  </ul>
+ `;
+
+        const $menu = $(menuHtml);
+        $('body').append($menu);
+
+        const iconOffset = $icon.offset();
+        $menu.css({
+            top: iconOffset.top + $icon.outerHeight() + 5,
+            left: iconOffset.left - $menu.outerWidth() + $icon.outerWidth()
+        });
+
+        $menu.find('li:not(.disabled)').on('click', function () {
+            const action = $(this).data('action');
+
+            // 3. อัปเดต State ให้ถูกตัวแปร
+            targetStateObj[columnHeader] = (action === 'unpin') ? false : action;
+
+            // 4. Render ตารางที่ถูกต้อง
+            if (tableType === 'detail') {
+                // Render Detail Table
+                if (currentMeterState.view === 'details' && currentMeterState.monthYear) {
+                    renderMeterDetailTable(currentMeterState.monthYear);
+                }
+            } else {
+                // Render Form Table (Logic เดิม)
+                const currentMonthYear = currentMeterState.monthYear;
+                const currentGroup = allMeterReadings.find(g => g.monthYear === currentMonthYear);
+                renderMeterFormTable(currentMonthYear, currentGroup);
+            }
+
+            $menu.remove();
+        });
+
+        setTimeout(() => {
+            $(window).one('click.meterPinMenu', function () {
+                $menu.remove();
+            });
+        }, 0);
+    }
+
+    function updateUsageCalculation(event) {
+        const input = event.target;
+        const roomId = input.dataset.roomId;
+        const type = input.dataset.type;
+
+        let currentValueStr = input.value.replace(/[^0-9]/g, '');
+        if (currentValueStr.length > 4) currentValueStr = currentValueStr.slice(0, 4);
+        if (input.value !== currentValueStr) input.value = currentValueStr;
+        const currentValue = parseInt(currentValueStr, 10);
+
+        const prevInput = document.querySelector(`input[data-room-id="${roomId}"][data-type="${type}-prev"]`);
+        const usageDisplayContainer = document.querySelector(`span[data-room-id="${roomId}"][data-type="${type}-usage"]`);
+
+        if (!prevInput || !usageDisplayContainer) return;
+
+        const prevValue = parseInt(prevInput.value, 10);
+
+        const usage = calculateMeterUsage(prevValue, currentValue);
+
+        const priorUsageStr = usageDisplayContainer.dataset.priorUsage;
+        const priorUsage = (priorUsageStr && priorUsageStr !== '') ? parseInt(priorUsageStr, 10) : null;
+
+        if (usage !== null) {
+            const trendHtml = getTrendHtml(usage, priorUsage);
+            usageDisplayContainer.innerHTML = `${usage}${trendHtml}`;
+            usageDisplayContainer.classList.add('text-primary', 'fw-bold');
+        } else {
+            usageDisplayContainer.innerHTML = '-';
+            usageDisplayContainer.classList.remove('text-primary', 'fw-bold');
+        }
+    }
+
+    async function promptChangeMeter(type, roomId, oldPrevValue) {
+        const typeText = type === 'water' ? 'น้ำ' : 'ไฟ';
+
+        const result = await Swal.fire({
+            title: `แก้ไขเลขเริ่มต้นมิเตอร์${typeText}`,
+            html: `
+    <div class="text-center mb-3">
+      เลขเริ่มต้นปัจจุบัน: <span class="badge bg-secondary fs-6">${oldPrevValue}</span>
+    </div>
+    <p class="small text-muted">
+      คุณต้องการระบุเลขเริ่มต้นใหม่หรือไม่?<br>
+      (ใช้สำหรับกรณีเปลี่ยนหม้อมิเตอร์ใหม่, มิเตอร์วนรอบ, หรือแก้ไขข้อมูลผิด)
+    </p>
+   `,
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonText: 'ระบุเลขใหม่',
+            cancelButtonText: 'ยกเลิก',
+            confirmButtonColor: '#0d6efd',
+            cancelButtonColor: '#6c757d',
+            reverseButtons: true
+        });
+
+        if (result.isConfirmed) {
+            const { value: newStartValue } = await Swal.fire({
+                title: `ระบุเลขมิเตอร์${typeText}เริ่มต้นใหม่`,
+                input: 'text',
+                inputLabel: `กรอกเลขที่อ่านได้จากมิเตอร์${typeText}ตัวใหม่ (ค่าเริ่มต้น)`,
+                inputPlaceholder: 'เช่น 0 หรือ 1234',
+                inputAttributes: {
+                    pattern: '[0-9]*',
+                    inputmode: 'numeric'
+                },
+                showCancelButton: true,
+                cancelButtonText: 'ยกเลิก',
+                confirmButtonText: 'บันทึก',
+                inputValidator: (value) => {
+                    if (!value || isNaN(parseInt(value.replace(/[^0-9]/g, ''), 10))) {
+                        return 'กรุณาระบุตัวเลขที่ถูกต้อง'
+                    }
+                }
+            });
+
+            if (newStartValue !== undefined && newStartValue !== null) {
+                const cleanValue = newStartValue.replace(/[^0-9]/g, '').slice(0, 4);
+
+                // อัปเดตค่าใน Input hidden
+                const prevInput = document.querySelector(`input[data-room-id="${roomId}"][data-type="${type}-prev"]`);
+                if (prevInput) {
+                    prevInput.value = cleanValue;
+
+                    // --- [ใหม่] ติดธงว่ามีการแก้ไข Manual ---
+                    prevInput.dataset.isManual = "true";
+                    // -------------------------------------
+
+                    // สั่งให้คำนวณหน่วยใหม่ทันที
+                    const currentInput = document.querySelector(`input[data-room-id="${roomId}"][data-type="${type}"]`);
+                    if (currentInput) {
+                        updateUsageCalculation({ target: currentInput });
+                    }
+
+                    showTimedToast(`เปลี่ยนเลขเริ่มต้นเป็น ${cleanValue} แล้ว (จะบันทึกเมื่อกดปุ่มบันทึกข้อมูล)`);
+                }
+            }
+        }
+    }
+    function filterMeterFormTable() {
+        renderMeterFormTable(currentMeterState.monthYear, allMeterReadings.find(g => g.monthYear === currentMeterState.monthYear));
+    }
+
+
+    // =================================================================
+    // DATA SAVING
+    // =================================================================
+
+    function parseInputAsInt(value) {
+        // ... (ฟังก์ชันนี้ไม่เปลี่ยนแปลง) ...
+        if (value === null || value === undefined) return null;
+        const strValue = String(value).trim();
+        if (strValue === '') return null;
+        const parsedValue = parseInt(strValue, 10);
+        return isNaN(parsedValue) ? null : parsedValue;
+    }
+
+
+function handleSaveMeterReadings() {
+        const monthVal = document.getElementById('meterMonthSelect').value;
+        const yearVal = document.getElementById('meterYearSelect').value;
+        const today = new Date();
+        const recordDate = today.toISOString().split('T')[0];
+
+        if (!monthVal || !yearVal) {
+            showError("กรุณาเลือกเดือนและปีให้ครบถ้วน");
+            return;
+        }
+
+        const yearAD = parseInt(yearVal, 10) - 543;
+        const monthYear = `${monthVal}/${yearAD}`;
+        const isNewMode = !document.getElementById('meterMonthSelect').disabled;
+        const existingGroup = allMeterReadings.find(g => g.monthYear === monthYear);
+
+        if (isNewMode && existingGroup) {
+            showError(`ข้อมูลเดือน ${monthYearToText(monthYear)} มีอยู่แล้ว ไม่สามารถสร้างซ้ำได้`);
+            return;
+        }
+
+        const existingReadingsMap = new Map(existingGroup?.data?.map(r => [r.roomId, r]) || []);
+        const readingsByRoom = {};
+        const allVisibleRows = document.querySelectorAll('#meter-reading-form-container tr[data-room-id]');
+
+        allVisibleRows.forEach(row => {
+            const roomId = row.dataset.roomId;
+            let room = window.allRooms.find(r => r.id === roomId);
+            const existingReading = existingReadingsMap.get(roomId) || {};
+
+            let currentRoomNumber = room ? room.number : (existingReading.roomNumber || 'Unknown');
+            let currentTowerId = room ? room.towerId : (existingReading.towerId || 'deleted');
+
+            const tenantSelect = row.querySelector('.tenant-selector');
+            let currentTenantId = null;   // ✅ [แก้ไข] เตรียมตัวแปรเก็บ ID
+            let currentTenantName = null;
+
+            if (tenantSelect) {
+                const selectedVal = tenantSelect.value;
+                
+                if (selectedVal === '_PRESERVE_NAME_') {
+                    // กรณีคงค่าเดิม: ดึงทั้งชื่อและ ID จากข้อมูลเก่า
+                    currentTenantName = existingReading.tenantName;
+                    currentTenantId = existingReading.customerId; // ✅ [แก้ไข] ดึง ID เดิมมาใส่
+                } else if (selectedVal && selectedVal !== "") {
+                    // กรณีเลือกใหม่
+                    const tenantInList = (window.tenantData || []).find(t => String(t.id) === String(selectedVal));
+                    
+                    if (tenantInList) {
+                        // ถ้าเจอในลิสต์ (เลือกจาก Dropdown)
+                        currentTenantName = tenantInList.name;
+                        currentTenantId = tenantInList.id; // ✅ [แก้ไข] บันทึก ID ผู้เช่า
+                    } else {
+                        // ถ้าพิมพ์เอง (Custom Text) หรือหาไม่เจอ
+                        currentTenantName = selectedVal;
+                        // ตัด ID: ออกจากชื่อ (ถ้ามี) กรณี Copy Paste มาแปลกๆ
+                        if (currentTenantName.includes('(ID:')) {
+                            currentTenantName = currentTenantName.split('(ID:')[0].trim();
+                        }
+                        currentTenantId = null; // พิมพ์เองไม่มี ID ในระบบ
+                    }
+                } else {
+                    // กรณีเลือกเป็นค่าว่าง
+                    currentTenantName = null;
+                    currentTenantId = null;
+                }
+            } else {
+                // กรณีไม่มี Dropdown (Fallback)
+                currentTenantName = existingReading.tenantName;
+                currentTenantId = existingReading.customerId;
+            }
+
+            const waterInput = document.querySelector(`input[data-room-id="${roomId}"][data-type="water"]`);
+            const electricInput = document.querySelector(`input[data-room-id="${roomId}"][data-type="electric"]`);
+            const waterPrevInput = document.querySelector(`input[data-room-id="${roomId}"][data-type="water-prev"]`);
+            const electricPrevInput = document.querySelector(`input[data-room-id="${roomId}"][data-type="electric-prev"]`);
+
+            const waterActiveNow = !!waterInput;
+            const electricActiveNow = !!electricInput;
+
+            const reading = {
+                roomId: roomId,
+                roomNumber: currentRoomNumber,
+                towerId: currentTowerId,
+                waterReading: null, waterbefore: null,
+                electricReading: null, electricbefore: null,
+                waterActive: waterActiveNow,
+                electricActive: electricActiveNow,
+                customerId: currentTenantId, // ✅ [แก้ไข] ใส่ตัวแปร currentTenantId ที่ดึงมาได้ (แทน null)
+                tenantName: currentTenantName,
+                lastUpdated: existingReading.lastUpdated || new Date().toISOString()
+            };
+
+            if (waterActiveNow) {
+                reading.waterReading = parseInputAsInt(waterInput.value);
+                if (waterPrevInput.dataset.isManual === "true") {
+                    reading.waterbefore = parseInputAsInt(waterPrevInput.value);
+                } else {
+                    reading.waterbefore = null;
+                }
+            } else {
+                reading.waterReading = parseInputAsInt(existingReading.waterReading);
+                reading.waterbefore = null;
+            }
+
+            if (electricActiveNow) {
+                reading.electricReading = parseInputAsInt(electricInput.value);
+                if (electricPrevInput.dataset.isManual === "true") {
+                    reading.electricbefore = parseInputAsInt(electricPrevInput.value);
+                } else {
+                    reading.electricbefore = null;
+                }
+            } else {
+                reading.electricReading = parseInputAsInt(existingReading.electricReading);
+                reading.electricbefore = null;
+            }
+
+            const oldWaterReading = parseInputAsInt(existingReading.waterReading);
+            const oldElectricReading = parseInputAsInt(existingReading.electricReading);
+            const oldTenantName = existingReading.tenantName;
+            const oldCustomerId = existingReading.customerId; // ✅ [เพิ่ม] เช็ค ID ด้วย
+
+            if (oldWaterReading !== reading.waterReading ||
+                oldElectricReading !== reading.electricReading ||
+                oldTenantName !== reading.tenantName ||
+                oldCustomerId !== reading.customerId || // ✅ [เพิ่ม] ถ้า ID เปลี่ยนให้อัปเดตเวลา
+                reading.waterbefore !== null ||
+                reading.electricbefore !== null
+            ) {
+                reading.lastUpdated = new Date().toISOString();
+            }
+
+            readingsByRoom[roomId] = reading;
+        });
+
+        if (existingGroup) {
+            existingGroup.data.forEach(oldR => {
+                if (!readingsByRoom[oldR.roomId]) {
+                    readingsByRoom[oldR.roomId] = oldR;
+                }
+            });
+        }
+
+        const dataArray = Object.values(readingsByRoom);
+
+        showLoading();
+        google.script.run
+            .withSuccessHandler(savedGroup => {
+                hideLoading();
+                showTimedToast(`บันทึกข้อมูล ${monthYearToText(monthYear)} เรียบร้อยแล้ว`);
+                
+                const index = allMeterReadings.findIndex(g => g.monthYear === savedGroup.monthYear);
+                if (index > -1) allMeterReadings[index] = savedGroup;
+                else allMeterReadings.push(savedGroup);
+
+                window.allMeterReadings = allMeterReadings;
+
+                showMeterDetailView(savedGroup.monthYear);
+                
+                if (typeof window.refreshRoomMeterDisplay === 'function') {
+                    window.refreshRoomMeterDisplay();
+                }
+
+                if (typeof window.syncBillWithNewMeterReadings === 'function') {
+                    console.log("[Meter] Syncing to Bill System...");
+                    window.syncBillWithNewMeterReadings(savedGroup);
+                }
+            })
+            .withFailureHandler(err => {
+                hideLoading();
+                showError("เกิดข้อผิดพลาดในการบันทึก: " + err.message);
+            })
+            .saveMeterReading(monthYear, recordDate, dataArray);
+    }
+    // =================================================================
+    // UTILITY FUNCTIONS
+    // =================================================================
+
+    // --- [3] เพิ่มฟังก์ชันใหม่ `formatThaiDateTime` ---
+    function formatThaiDateTime(isoString) {
+        if (!isoString) return null;
+        try {
+            const date = new Date(isoString);
+            if (isNaN(date.getTime())) {
+                return isoString; // ถ้าแปลงไม่ได้ คืนค่าเดิม
+            }
+
+            // options สำหรับ 'th-TH' (Asia/Bangkok)
+            const options = {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZone: 'Asia/Bangkok',
+                hour12: false,
+                calendar: 'buddhist' // ใช้ พ.ศ.
+            };
+
+            // .replace เพื่อจัดรูปแบบ "DD/MM/YYYY, HH:mm"
+            return date.toLocaleString('th-TH', options).replace(',', ' ');
+
+        } catch (e) {
+            console.error("Error formatting date:", e);
+            return isoString; // คืนค่าเดิมถ้ามีปัญหา
+        }
+    }
+
+    function monthYearToText(monthYear) {
+        if (!monthYear || typeof monthYear !== 'string') return "เดือน/ปี ไม่ถูกต้อง";
+
+        let month, year;
+
+        if (monthYear.includes('/')) {
+            const parts = monthYear.split('/');
+            month = parseInt(parts[0], 10);
+            year = parseInt(parts[1], 10);
+        } else if (monthYear.includes('-')) {
+            const parts = monthYear.split('-');
+            year = parseInt(parts[0], 10);
+            month = parseInt(parts[1], 10);
+        } else {
+            return `รูปแบบผิด: ${monthYear}`;
+        }
+
+        if (isNaN(month) || isNaN(year)) {
+            return `ข้อมูลผิด: ${monthYear}`;
+        }
+
+        const thaiMonths = [
+            "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+            "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+        ];
+
+        const thaiMonth = thaiMonths[month - 1];
+        // ⭐️ แปลง ค.ศ. เป็น พ.ศ.
+        const thaiYear = year + 543;
+
+        if (!thaiMonth) {
+            return `เดือนผิด: ${monthYear}`;
+        }
+
+        return `${thaiMonth} ${thaiYear}`;
+    }
+
+    function debounce(func, delay) {
+        // ... (ฟังก์ชันนี้ไม่เปลี่ยนแปลง) ...
+        let timeout;
+        return function (...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), delay);
+        };
+    }
+
+    // =================================================================
+    // EXPORT & IMPORT LOGIC
+    // =================================================================
+
+    // 1. ฟังก์ชันตั้งค่า Event Listener (เรียกใน setupMeterPageEventListeners หรือ window.setupMeterAppUI)
+    function setupImportExportListeners() {
+        const exportBtn = document.getElementById('exportMeterBtn');
+        if (exportBtn) exportBtn.addEventListener('click', handleExportMeterCSV);
+
+        const templateLink = document.getElementById('downloadMeterTemplateLink');
+        if (templateLink) templateLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            downloadMeterTemplate();
+        });
+
+        const importBtn = document.getElementById('importMeterBtn');
+        if (importBtn) {
+            importBtn.addEventListener('click', () => {
+                resetImportUI(); // รีเซ็ตหน้าจอทุกครั้งที่เปิดใหม่
+                const myModal = new bootstrap.Modal(document.getElementById('meterImportModal'));
+                myModal.show();
+            });
+        }
+
+        setupDragAndDrop();
+
+        document.getElementById('meterCancelImportBtn').addEventListener('click', () => {
+            resetImportUI();
+        });
+
+        document.getElementById('meterConfirmImportBtn').addEventListener('click', handleConfirmImport);
+    }
+
+    function handleConfirmImport() {
+        // กรองเอาเฉพาะข้อมูลที่ Valid
+        const validData = currentImportRawData.filter(item => item.status.isValid);
+
+        if (validData.length === 0) {
+            Swal.fire('ไม่มีข้อมูลที่นำเข้าได้', 'กรุณาตรวจสอบไฟล์ CSV ของคุณอีกครั้ง', 'warning');
+            return;
+        }
+
+        const importMonths = [...new Set(validData.map(item => item.monthYear))];
+
+        const duplicateMonths = importMonths.filter(newMonth =>
+            allMeterReadings.some(existing => existing.monthYear === newMonth)
+        );
+
+        if (duplicateMonths.length > 0) {
+            Swal.fire({
+                title: 'พบข้อมูลซ้ำในระบบ',
+                html: `ไม่สามารถนำเข้าข้อมูลได้ เนื่องจากเดือนเหล่านี้มีการบันทึกอยู่แล้ว:<br><br>
+              <h5 class="text-danger">${duplicateMonths.join(', ')}</h5><br>
+              <span class="text-muted small">หากต้องการนำเข้าใหม่ กรุณาลบข้อมูลเดือนดังกล่าวในระบบออกก่อน</span>`,
+                icon: 'error',
+                confirmButtonText: 'เข้าใจแล้ว'
+            });
+            return;
+        }
+
+
+        // สรุปยอดก่อนส่ง (Logic เดิม)
+        const total = currentImportRawData.length;
+        const valid = validData.length;
+
+        if (valid < total) {
+            // แจ้งเตือนถ้ามีบางรายการไม่ผ่าน
+            Swal.fire({
+                title: 'พบข้อมูลไม่สมบูรณ์',
+                text: `มีข้อมูลที่ถูกต้อง ${valid} จากทั้งหมด ${total} รายการ ต้องการนำเข้าเฉพาะรายการที่ถูกต้องหรือไม่?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'ยืนยันนำเข้าเฉพาะที่ผ่าน',
+                cancelButtonText: 'ยกเลิก',
+                confirmButtonColor: '#0d6efd'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    prepareAndSendImport(validData);
+                }
+            });
+        } else {
+            // ถ้าผ่านหมดก็นำเข้าเลย
+            prepareAndSendImport(validData);
+        }
+    }
+
+function prepareAndSendImport(validRows) {
+        // จัดกลุ่มตามเดือน
+        const importDataByMonth = {};
+
+        validRows.forEach(row => {
+            const monthYear = row.monthYear;
+
+            let targetCustomerId = null;
+            if (row.csvTenantId) {
+                targetCustomerId = row.csvTenantId;
+            } else if (row.roomObj && row.roomObj.tenant) {
+                targetCustomerId = row.roomObj.tenant.id;
+            }
+
+            const targetTenantName = row.tenantName || (row.roomObj && row.roomObj.tenant ? row.roomObj.tenant.name : '');
+
+            const readingObj = {
+                roomId: row.roomId,
+                roomNumber: row.roomNumber, // ✅ [เพิ่ม] บันทึก Snapshot เลขห้อง
+                towerId: row.towerId || 'unassigned', // ✅ [เพิ่ม] บันทึก Snapshot ตึก
+                waterReading: row.waterVal,
+                electricReading: row.electricVal,
+                waterActive: true,
+                electricActive: true,
+                customerId: targetCustomerId,
+                tenantName: targetTenantName,
+                lastUpdated: new Date().toISOString()
+            };
+
+            if (!importDataByMonth[monthYear]) {
+                importDataByMonth[monthYear] = [];
+            }
+            importDataByMonth[monthYear].push(readingObj);
+        });
+
+        // ปิด Modal
+        const modalEl = document.getElementById('meterImportModal');
+        const modalInstance = bootstrap.Modal.getInstance(modalEl);
+        if (modalInstance) modalInstance.hide();
+
+        // เรียกฟังก์ชันส่ง Server เดิม
+        performBatchImport(importDataByMonth);
+    }
+
+    function resetImportUI() {
+        document.getElementById('meter-import-view-upload').style.display = 'block';
+        document.getElementById('meter-import-view-preview').style.display = 'none';
+        document.getElementById('meterFileNameDisplay').textContent = '';
+        document.getElementById('meterCsvInput').value = ''; // เคลียร์ไฟล์
+        currentImportRawData = [];
+
+        document.getElementById('meter-import-drop-area').classList.remove('highlight');
+    }
+
+function downloadMeterTemplate() {
+        if (!window.allRooms || window.allRooms.length === 0) {
+            Swal.fire('ไม่พบข้อมูลห้อง', 'ระบบยังไม่มีข้อมูลห้องพักเพื่อสร้างเทมเพลต', 'warning');
+            return;
+        }
+
+        let csvContent = "\uFEFF";
+        // ✅ [แก้ไข] เรียง Header: น้ำ ก่อน ไฟ
+        csvContent += "เดือน/ปี,เลขห้อง,ชื่อผู้เช่า (หรือ ID),มิเตอร์น้ำ,มิเตอร์ไฟ,วันที่บันทึก\n";
+
+        const now = new Date();
+        const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
+        const currentYear = now.getFullYear();
+        const defaultMonthYear = `${currentMonth}/${currentYear}`;
+
+        const activeRooms = window.allRooms.filter(r => r.isActive !== false);
+        activeRooms.sort((a, b) => String(a.number).localeCompare(String(b.number), undefined, { numeric: true }));
+
+        activeRooms.forEach(room => {
+            const roomNum = room.number;
+            let tenantInfo = "";
+            if (room.tenant) {
+                tenantInfo = room.tenant.name ? room.tenant.name.replace(/"/g, "'") : "";
+            }
+            if (tenantInfo.includes(',')) {
+                tenantInfo = `"${tenantInfo}"`;
+            }
+            // เว้นว่าง comma 2 ตัวท้ายไว้สำหรับ น้ำ และ ไฟ
+            csvContent += `${defaultMonthYear},"${roomNum}",${tenantInfo},,,\n`;
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        const dateStr = now.toISOString().split('T')[0];
+        link.setAttribute("download", `template_meter_reading_${dateStr}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function setupDragAndDrop() {
+        const dropArea = document.getElementById('meter-import-drop-area');
+        const fileInput = document.getElementById('meterCsvInput');
+        const fileNameDisplay = document.getElementById('meterFileNameDisplay');
+
+        // ป้องกัน Default Browser behavior
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // Highlight ตอนลาก
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => dropArea.classList.add('highlight'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => dropArea.classList.remove('highlight'), false);
+        });
+
+        // Handle Drop
+        dropArea.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles(files);
+        }, false);
+
+        // Handle Click
+        dropArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // Handle Input Change
+        fileInput.addEventListener('change', function () {
+            handleFiles(this.files);
+        });
+
+        // ฟังก์ชันจัดการไฟล์
+        function handleFiles(files) {
+            if (files.length > 0) {
+                const file = files[0];
+                fileNameDisplay.textContent = `กำลังอ่านไฟล์: ${file.name}`;
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    // ไม่ต้องสั่งปิด Modal ตรงนี้แล้ว เพราะเราจะโชว์ Preview ใน Modal ต่อ
+                    processCSVImport(e.target.result);
+                };
+                reader.readAsText(file);
+            }
+        }
+    }
+
+    // 2. ฟังก์ชัน Export CSV
+function handleExportMeterCSV() {
+        if (!allMeterReadings || allMeterReadings.length === 0) {
+            Swal.fire('ไม่มีข้อมูล', 'ยังไม่มีรายการจดมิเตอร์ให้ส่งออก', 'warning');
+            return;
+        }
+
+        let csvContent = "\uFEFF";
+        // ✅ [แก้ไข] เรียง Header: น้ำ ก่อน ไฟ
+        csvContent += "เดือน/ปี,เลขห้อง,ชื่อผู้เช่า,มิเตอร์น้ำ,มิเตอร์ไฟ,วันที่บันทึก\n";
+
+        allMeterReadings.forEach(group => {
+            const monthYear = group.monthYear;
+            const recordDate = group.recordDate || '';
+
+            if (group.data && Array.isArray(group.data)) {
+                group.data.forEach(reading => {
+                    const room = window.allRooms.find(r => r.id === reading.roomId);
+                    const roomNumber = room ? room.number : 'Unknown';
+
+                    const tenantName = (reading.tenantName || '').replace(/,/g, ' '); 
+                    const water = reading.waterReading !== null ? reading.waterReading : '';
+                    const electric = reading.electricReading !== null ? reading.electricReading : '';
+
+                    // ✅ [แก้ไข] เรียง Data: water ก่อน electric
+                    csvContent += `"${monthYear}","${roomNumber}","${tenantName}","${water}","${electric}","${recordDate}"\n`;
+                });
+            }
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `meter_readings_export_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // 3. ฟังก์ชัน Import CSV
+    function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // รีเซ็ต input เพื่อให้เลือกไฟล์เดิมซ้ำได้ถ้าต้องการ
+        event.target.value = '';
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const content = e.target.result;
+            processCSVImport(content);
+        };
+        reader.readAsText(file);
+    }
+
+    function parseFlexibleMonthYear(str) {
+        if (!str) return null;
+
+        // 1. ล้างค่าขยะ และเปลี่ยนชื่อเดือนภาษาอังกฤษเป็นตัวเลข
+        let s = str.replace(/^\uFEFF/, '').trim().toLowerCase();
+        const months = {
+            'jan': '01', 'feb': '02', 'mar': '03', 'apr': '04', 'may': '05', 'jun': '06',
+            'jul': '07', 'aug': '08', 'sep': '09', 'oct': '10', 'nov': '11', 'dec': '12'
+        };
+        Object.keys(months).forEach(key => {
+            if (s.includes(key)) s = s.replace(key, months[key]);
+        });
+
+        // 2. เปลี่ยนตัวคั่นเป็น /
+        s = s.replace(/[-.]/g, '/');
+        const parts = s.split('/');
+
+        let m, y;
+
+        // --- กรณีที่ 1: มี 3 ส่วน (เช่น 1/1/2025 หรือ 2025-01-01) ---
+        if (parts.length === 3) {
+            const p0 = parseInt(parts[0], 10);
+            const p1 = parseInt(parts[1], 10);
+            const p2 = parseInt(parts[2], 10);
+
+            if (p0 > 1000) {
+                // รูปแบบ ปี-เดือน-วัน (2025-01-01)
+                y = p0; m = p1;
+            } else if (p2 > 1000) {
+                // รูปแบบ วัน/เดือน/ปี (1/1/2025) หรือ เดือน/วัน/ปี
+                y = p2;
+                // โดยทั่วไป Excel ไทยจะส่งมาเป็น วัน/เดือน/ปี -> เอาค่ากลางเป็นเดือน
+                m = p1;
+            } else if (p2 > 2400) {
+                // กรณีปี พ.ศ. (1/1/2568)
+                y = p2 - 543;
+                m = p1;
+            }
+        }
+        // --- กรณีที่ 2: มี 2 ส่วน (เช่น 01/2025, Jan-25) ---
+        else if (parts.length === 2) {
+            m = parseInt(parts[0], 10);
+            y = parseInt(parts[1], 10);
+
+            // กรณีสลับที่ (2025/01)
+            if (m > 100) { const temp = m; m = y; y = temp; }
+        }
+        else {
+            return null;
+        }
+
+        // 3. ปรับปี 2 หลัก (เช่น 25 -> 2025)
+        if (y < 100) y += 2000;
+
+        // 4. รองรับปี พ.ศ. (เผื่อหลุดมา) -> แปลงเป็น ค.ศ.
+        if (y > 2400) y -= 543;
+
+        // ตรวจสอบความถูกต้อง
+        if (!isNaN(m) && m >= 1 && m <= 12 && !isNaN(y) && y > 2000) {
+            return `${String(m).padStart(2, '0')}/${y}`;
+        }
+
+        return null;
+    }
+
+function processCSVImport(csvText) {
+        const lines = csvText.split(/\r\n|\n|\r/);
+
+        if (lines.length < 2) {
+            Swal.fire('ไฟล์ผิดพลาด', 'ไฟล์ CSV ไม่มีข้อมูล', 'error');
+            return;
+        }
+
+        const existingMonths = new Set(allMeterReadings.map(g => g.monthYear));
+
+        currentImportRawData = [];
+
+        // เริ่มอ่านตั้งแต่บรรทัดที่ 2 (index 1)
+        for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line) continue;
+
+            const parts = line.split(',').map(p => p.replace(/"/g, '').trim());
+            if (parts.length < 5) continue;
+
+            const rawMonthYear = parts[0];
+            const roomNumber = parts[1];
+
+            // --- ส่วนรับค่า Tenant ---
+            const rawTenantInput = parts[2];
+            let finalTenantName = rawTenantInput;
+            let finalTenantId = null;
+
+            if (rawTenantInput && window.tenantData && Array.isArray(window.tenantData)) {
+                const foundTenant = window.tenantData.find(t => String(t.id) === rawTenantInput);
+                if (foundTenant) {
+                    finalTenantName = foundTenant.name;
+                    finalTenantId = foundTenant.id;
+                }
+            }
+
+            // ✅ [แก้ไข] สลับตำแหน่งกลับให้ถูกต้อง (น้ำมาก่อน หรือตามไฟล์ CSV ของคุณ)
+            // ถ้าไฟล์ CSV ของคุณเรียงเป็น: เดือน, ห้อง, ผู้เช่า, น้ำ, ไฟ
+            const waterValStr = parts[3];    // ช่องที่ 4 คือ น้ำ
+            const electricValStr = parts[4]; // ช่องที่ 5 คือ ไฟ
+
+            const validFormatDate = parseFlexibleMonthYear(rawMonthYear);
+            const room = window.allRooms.find(r => r.number === roomNumber);
+
+            let status = { isValid: true, message: 'ปกติ' };
+
+            // --- เริ่มตรวจสอบเงื่อนไข ---
+            if (!room) {
+                status.isValid = false; 
+                status.message = 'ไม่พบเลขห้องนี้ในระบบปัจจุบัน';
+            }
+            else if (!validFormatDate) {
+                status.isValid = false;
+                status.message = `รูปแบบเดือน/ปี ไม่ถูกต้อง (${rawMonthYear})`;
+            }
+            else if (existingMonths.has(validFormatDate)) {
+                status.isValid = false;
+                status.message = `มีข้อมูลเดือน ${validFormatDate} ในระบบแล้ว`;
+            }
+            else {
+                const waterValCheck = waterValStr !== '' ? parseInt(waterValStr) : null;
+                const electricValCheck = electricValStr !== '' ? parseInt(electricValStr) : null;
+
+                if (waterValStr !== '' && isNaN(waterValCheck)) {
+                    status.isValid = false;
+                    status.message = 'ค่าน้ำต้องเป็นตัวเลข';
+                }
+                else if (electricValStr !== '' && isNaN(electricValCheck)) {
+                    status.isValid = false;
+                    status.message = 'ค่าไฟต้องเป็นตัวเลข';
+                }
+            }
+
+            const waterVal = waterValStr !== '' ? parseInt(waterValStr) : null;
+            const electricVal = electricValStr !== '' ? parseInt(electricValStr) : null;
+
+            currentImportRawData.push({
+                monthYear: validFormatDate || rawMonthYear,
+                roomNumber: roomNumber,
+                tenantName: finalTenantName,
+                csvTenantId: finalTenantId,
+                waterVal,
+                electricVal,
+                roomId: room ? room.id : null,
+                towerId: room ? room.towerId : null,
+                roomObj: room,
+                status: status
+            });
+        }
+
+        if (currentImportRawData.length === 0) {
+            Swal.fire('ไม่พบข้อมูล', 'ไม่สามารถอ่านข้อมูลจากไฟล์ได้', 'warning');
+            return;
+        }
+
+        renderPreviewTable(currentImportRawData);
+
+        document.getElementById('meter-import-view-upload').style.display = 'none';
+        document.getElementById('meter-import-view-preview').style.display = 'block';
+    }
+
+
+function renderPreviewTable(data) {
+        // ... (ส่วนต้นเหมือนเดิม) ...
+        const tbody = document.querySelector('#meter-preview-table tbody');
+        const countEl = document.getElementById('meter-preview-record-count');
+        tbody.innerHTML = ''; 
+        countEl.textContent = data.length;
+
+        let html = '';
+        data.forEach(item => {
+            const statusClass = item.status.isValid ? 'status-valid' : 'status-invalid';
+            const statusIcon = item.status.isValid ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-exclamation-circle"></i>';
+            const errorMsg = item.status.isValid ? '' : `<span class="preview-error-text">${item.status.message}</span>`;
+
+            const wShow = item.waterVal !== null ? item.waterVal : '-';
+            const eShow = item.electricVal !== null ? item.electricVal : '-';
+
+            html += `
+            <tr>
+                <td>
+                    <div class="fw-bold">${item.roomNumber}</div>
+                    <small class="text-muted">${item.monthYear}</small>
+                </td>
+                <td>${wShow} <small class="text-muted">(น้ำ)</small></td>
+                <td>${eShow} <small class="text-muted">(ไฟ)</small></td>
+                <td>
+                    <div class="status-badge ${statusClass}">
+                        ${statusIcon} ${item.status.isValid ? 'ผ่าน' : 'ไม่ผ่าน'}
+                    </div>
+                    ${errorMsg}
+                </td>
+            </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+    }
+
+    function performBatchImport(dataByMonth) {
+        showLoading();
+
+        const payload = Object.keys(dataByMonth).map(monthYear => {
+            return {
+                monthYear: monthYear,
+                data: dataByMonth[monthYear]
+            };
+        });
+
+        google.script.run
+            .withSuccessHandler((res) => {
+                showTimedToast('นำเข้าข้อมูลสำเร็จ');
+
+                // ส่ง forceRefresh: true เพื่อโหลดข้อมูลใหม่จาก Server
+                window.initializeMeterApp({ manageLoading: true, forceRefresh: true }).then(() => {
+
+                    showMeterListView(false);
+
+                    // Render DOM ของหน้า Meter
+                    renderMeterGroups();
+
+                    if (typeof window.refreshRoomMeterDisplay === 'function') {
+                        window.refreshRoomMeterDisplay();
+                    }
+
+                    hideLoading();
+                });
+            })
+            .withFailureHandler((err) => {
+                hideLoading();
+                Swal.fire('เกิดข้อผิดพลาด', 'นำเข้าไม่สำเร็จ: ' + err.message, 'error');
+            })
+            .batchImportMeterReadings(payload);
+    }
+
+    function getTrendHtml(currentUsage, priorUsage) {
+        if (priorUsage === null || priorUsage === undefined || isNaN(priorUsage)) return '';
+        if (currentUsage === null || currentUsage === undefined || isNaN(currentUsage)) return '';
+
+        const diff = currentUsage - priorUsage;
+
+        // Style: ให้ตัวเล็กหน่อย และลอยอยู่ด้านข้าง
+        const style = 'font-size: 0.75em; margin-left: 6px; white-space: nowrap;';
+
+        if (diff > 0) {
+            // ใช้เยอะขึ้น (สีแดง)
+            return `<span class="text-danger fw-bold" style="${style}" title="ใช้เพิ่มขึ้น ${diff} หน่วย จากเดือนก่อน (${priorUsage})">
+             <i class="fas fa-arrow-up small"></i> ${diff}
+            </span>`;
+        } else if (diff < 0) {
+            // ใช้น้อยลง (สีเขียว)
+            return `<span class="text-success fw-bold" style="${style}" title="ใช้ลดลง ${Math.abs(diff)} หน่วย จากเดือนก่อน (${priorUsage})">
+             <i class="fas fa-arrow-down small"></i> ${Math.abs(diff)}
+            </span>`;
+        } else {
+            // เท่าเดิม (สีเทา)
+            return `<span class="text-muted" style="${style}" title="ใช้เท่าเดือนก่อน">
+             <i class="fas fa-minus small"></i>
+            </span>`;
+        }
+    }
+
+    function calculateMeterUsage(prev, current) {
+        if (prev === null || prev === undefined || isNaN(prev)) return null;
+        if (current === null || current === undefined || isNaN(current)) return null;
+
+        let p = parseInt(prev, 10);
+        let c = parseInt(current, 10);
+
+        if (c >= p) {
+            return c - p; // เคสปกติ
+        } else {
+            return (c + 10000) - p; // เคสวนรอบ (Roll over)
+        }
+    }
+
+    function getMonthYearValue(monthYear) {
+        if (!monthYear) return 0;
+        try {
+            let parts, m, y;
+            if (monthYear.includes('/')) parts = monthYear.split('/');
+            else if (monthYear.includes('-')) parts = monthYear.split('-');
+            else return 0;
+
+            if (parts[0].length === 4) { // YYYY-MM
+                y = parseInt(parts[0]); m = parseInt(parts[1]);
+            } else { // MM/YYYY
+                m = parseInt(parts[0]); y = parseInt(parts[1]);
+            }
+
+            // แปลง พ.ศ. เป็น ค.ศ. ถ้าจำเป็น (สันนิษฐานว่าถ้า > 2400 คือ พ.ศ.)
+            const realYear = y > 2400 ? y - 543 : y;
+            return (realYear * 100) + m;
+        } catch (e) {
+            return 0;
+        }
+    }
+
+    function findPreviousReading(currentMonthYear, roomId, type) {
+        const currentVal = getMonthYearValue(currentMonthYear);
+        if (currentVal === 0) return null;
+
+        // กรองเอาเฉพาะเดือนที่เก่ากว่าเดือนปัจจุบัน และเรียงจาก ใหม่ -> เก่า
+        const previousGroups = allMeterReadings
+            .filter(g => getMonthYearValue(g.monthYear) < currentVal)
+            .sort((a, b) => getMonthYearValue(b.monthYear) - getMonthYearValue(a.monthYear));
+
+        for (let group of previousGroups) {
+            const reading = (group.data || []).find(r => r.roomId === roomId);
+            if (reading) {
+                let val = null;
+                // เช็คค่าตามประเภท
+                if (type === 'water' && reading.waterReading !== null && reading.waterReading !== "" && reading.waterReading !== undefined) {
+                    val = parseInt(reading.waterReading, 10);
+                } else if (type === 'electric' && reading.electricReading !== null && reading.electricReading !== "" && reading.electricReading !== undefined) {
+                    val = parseInt(reading.electricReading, 10);
+                }
+
+                if (!isNaN(val) && val !== null) {
+                    // คำนวณความห่างของเดือน
+                    const prevVal = getMonthYearValue(group.monthYear);
+
+                    // logic ง่ายๆ: เช็คว่าห่างกันเกิน 1 step หรือไม่ (เช่น 202503 - 202501 = 2 -> skipped)
+                    // (วิธีนี้ใช้ได้กรณีปีเดียวกัน ถ้าข้ามปีต้องใช้ Date Object แต่เพื่อความเร็วใช้ diff value ไปก่อน)
+                    // เพื่อความชัวร์ ใช้ Date Object คำนวณ Gap
+                    const cY = Math.floor(currentVal / 100); const cM = currentVal % 100;
+                    const pY = Math.floor(prevVal / 100); const pM = prevVal % 100;
+                    const totalMonthsDiff = (cY - pY) * 12 + (cM - pM);
+
+                    return {
+                        value: val,
+                        monthYear: group.monthYear,
+                        isSkipped: totalMonthsDiff > 1, // ถ้าห่าง > 1 เดือน แสดงว่ามีการกระโดดข้าม
+                        gap: totalMonthsDiff
+                    };
+                }
+            }
+        }
+        return null; // ไม่เจอเลย (อาจเป็นเดือนแรกสุด)
+    }
+
+    function findPreviousUsageAmount(currentMonthYear, roomId, type) {
+        const currentVal = getMonthYearValue(currentMonthYear);
+        if (currentVal === 0) return null;
+
+        // 1. ดึงประวัติทั้งหมดที่เก่ากว่าเดือนปัจจุบัน เรียงจาก ใหม่ -> เก่า
+        const previousGroups = allMeterReadings
+            .filter(g => getMonthYearValue(g.monthYear) < currentVal)
+            .sort((a, b) => getMonthYearValue(b.monthYear) - getMonthYearValue(a.monthYear));
+
+        if (previousGroups.length === 0) return null; // ไม่มีประวัติเลย
+
+        // 2. ดูข้อมูลของ "เดือนที่แล้ว" (Month - 1)
+        const prevGroup = previousGroups[0];
+        const prevReading = (prevGroup.data || []).find(r => r.roomId === roomId);
+
+        if (!prevReading) return null;
+
+        // หาค่าจดปลายเดือน (End Value) ของเดือนที่แล้ว
+        let endVal, active;
+        if (type === 'water') {
+            endVal = prevReading.waterReading;
+            active = prevReading.waterActive;
+        } else {
+            endVal = prevReading.electricReading;
+            active = prevReading.electricActive;
+        }
+
+        // ถ้าเดือนที่แล้วปิดใช้งาน หรือไม่มีเลขจด ก็จบคำนวณไม่ได้
+        if (active === false || endVal === null || endVal === "" || endVal === undefined) return null;
+        endVal = parseInt(endVal, 10);
+
+        // 3. หาค่าตั้งต้น (Start Value) ของเดือนที่แล้ว
+        // วิธี A: ดูว่าใน DB บันทึก waterbefore/electricbefore ไว้ไหม (สำหรับข้อมูลใหม่ๆ)
+        let startVal = type === 'water' ? prevReading.waterbefore : prevReading.electricbefore;
+
+        // วิธี B: ถ้าไม่มี before (เช่น ข้อมูลเก่า) ให้วิ่งไปหาเลขจดของ "เดือนก่อนหน้านั้น" (Month - 2)
+        if (startVal === null || startVal === undefined || isNaN(parseInt(startVal, 10))) {
+            // วนลูปหากลุ่มถัดไปในลิสต์ (เริ่มที่ index 1 คือเดือนถัดไปจาก prevGroup)
+            for (let i = 1; i < previousGroups.length; i++) {
+                const olderGroup = previousGroups[i];
+                const olderReading = (olderGroup.data || []).find(r => r.roomId === roomId);
+                if (olderReading) {
+                    let olderVal = type === 'water' ? olderReading.waterReading : olderReading.electricReading;
+                    if (olderVal !== null && olderVal !== "" && olderVal !== undefined) {
+                        startVal = parseInt(olderVal, 10);
+                        break; // เจอแล้ว หยุดลูป
+                    }
+                }
+            }
+        } else {
+            startVal = parseInt(startVal, 10);
+        }
+
+        // 4. คำนวณหน่วยที่ใช้ (ถ้ามีทั้ง ต้น และ ปลาย)
+        if (!isNaN(startVal) && !isNaN(endVal)) {
+            return calculateMeterUsage(startVal, endVal);
+        }
+
+        return null;
+    }
+
+</script>
+
+function getMeterReadings() {
+ try {
+  const sheet = getSheet().getSheetByName(CONFIG.SHEETS.METER_READINGS);
+  if (!sheet || sheet.getLastRow() < 2) {
+   Logger.log("Meter readings sheet is empty or only has header.");
+   return []; // ส่ง Array ว่างกลับไป
+  }
+
+  const data = sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).getValues();
+  Logger.log(`Found ${data.length} raw rows from sheet.`);
+
+  const mappedData = data.map(row => {
+   let readingData = [];
+   try {
+    if (row[CONFIG.METER_READINGS_SHEET.DATA]) {
+     readingData = JSON.parse(row[CONFIG.METER_READINGS_SHEET.DATA]);
+    }
+   } catch (e) {
+    Logger.log(`Could not parse meter data for row ${row[CONFIG.METER_READINGS_SHEET.ID]}: ${e}`);
+   }
+   
+   // --- 1. แปลง monthYear (จากครั้งที่แล้ว) ---
+   let monthYearValue = row[CONFIG.METER_READINGS_SHEET.MONTH_YEAR];
+   if (monthYearValue instanceof Date) {
+    const month = String(monthYearValue.getMonth() + 1).padStart(2, '0');
+    const year = monthYearValue.getFullYear();
+    monthYearValue = `${month}/${year}`;
+   }
+
+   // --- 2. แปลง recordDate (มีอยู่แล้ว) ---
+   let recordDateValue = row[CONFIG.METER_READINGS_SHEET.RECORD_DATE];
+   if (recordDateValue instanceof Date) {
+    recordDateValue = recordDateValue.toISOString().split('T')[0];
+   }
+      
+      // --- 3. แปลง createdAt (จุดแก้ไขสำคัญ) ---
+      let createdAtValue = row[CONFIG.METER_READINGS_SHEET.CREATED_AT];
+      if (createdAtValue instanceof Date) {
+        createdAtValue = createdAtValue.toISOString(); // แปลงเป็น String
+      }
+
+      // --- 4. แปลง updatedAt (จุดแก้ไขสำคัญ) ---
+      let updatedAtValue = row[CONFIG.METER_READINGS_SHEET.UPDATED_AT];
+      if (updatedAtValue instanceof Date) {
+        updatedAtValue = updatedAtValue.toISOString(); // แปลงเป็น String
+      }
+
+   return {
+    id: row[CONFIG.METER_READINGS_SHEET.ID],
+    monthYear: monthYearValue, // String "MM/YYYY" or ""
+    data: readingData,
+    recordDate: recordDateValue, // String "YYYY-MM-DD" or ""
+    createdAt: createdAtValue, // String (ISO)
+    updatedAt: updatedAtValue  // String (ISO)
+   };
+  });
+    
+  Logger.log(`Mapped data (before filter): ${JSON.stringify(mappedData.map(d => ({id: d.id, monthYear: d.monthYear, createdAt: d.createdAt})))}`); 
+
+  const filteredData = mappedData.filter(group => group.id && group.monthYear);
+
+  // Log ข้อมูลสุดท้ายที่จะส่งกลับไป
+  Logger.log(`FINAL data being sent to client: ${JSON.stringify(filteredData)}`); 
+
+  return filteredData;
+
+ } catch (e) {
+  // ดักจับข้อผิดพลาดทั้งหมดที่เกิดขึ้นในฟังก์ชัน
+  Logger.log(`CRITICAL ERROR in getMeterReadings: ${e.message} \nStack: ${e.stack}`);
+  // ส่ง Error กลับไปหา Client เพื่อให้ .withFailureHandler ทำงาน
+  throw new Error(`ไม่สามารถดึงข้อมูลการจดมิเตอร์ได้: ${e.message}`);
+ }
+}
+
+function saveMeterReading(monthYear, recordDate, dataArray) {
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) {
+    throw new Error("ระบบไม่ว่าง โปรดลองอีกครั้ง (Server is busy)");
+  }
+
+  try {
+    const sheet = getSheet().getSheetByName(CONFIG.SHEETS.METER_READINGS);
+    const data = sheet.getDataRange().getValues();
+    const now = new Date();
+    
+    // ค้นหาแถวที่มีอยู่สำหรับ monthYear นี้
+    let rowIndex = -1;
+    for (let i = 1; i < data.length; i++) {
+      // ตรวจสอบค่า monthYear (อาจเป็น Date object หรือ String)
+      let cellValue = data[i][CONFIG.METER_READINGS_SHEET.MONTH_YEAR];
+      if (cellValue instanceof Date) {
+         const month = String(cellValue.getMonth() + 1).padStart(2, '0');
+         const year = cellValue.getFullYear();
+         cellValue = `${month}/${year}`;
+      }
+      
+      if (cellValue === monthYear) {
+        rowIndex = i + 1; // 1-based index
+        break;
+      }
+    }
+
+    const dataJson = JSON.stringify(dataArray);
+
+    if (rowIndex > -1) {
+      // --- อัปเดตแถวที่มีอยู่ ---
+      const rowId = sheet.getRange(rowIndex, CONFIG.METER_READINGS_SHEET.ID + 1).getValue();
+      const createdAtValue = sheet.getRange(rowIndex, CONFIG.METER_READINGS_SHEET.CREATED_AT + 1).getValue();
+
+      sheet.getRange(rowIndex, CONFIG.METER_READINGS_SHEET.DATA + 1).setValue(dataJson);
+      sheet.getRange(rowIndex, CONFIG.METER_READINGS_SHEET.RECORD_DATE + 1).setValue(recordDate);
+      sheet.getRange(rowIndex, CONFIG.METER_READINGS_SHEET.UPDATED_AT + 1).setValue(now);
+      
+      // [✅ แก้ไขจุดนี้] แปลง Date Object เป็น String ก่อนส่งกลับ
+      return {
+        id: rowId,
+        monthYear: monthYear,
+        data: dataArray,
+        recordDate: recordDate,
+        createdAt: (createdAtValue instanceof Date) ? createdAtValue.toISOString() : createdAtValue, // แปลง createdAt
+        updatedAt: now.toISOString() // แปลง updatedAt
+      };
+
+    } else {
+      // --- สร้างแถวใหม่ ---
+      const lastId = sheet.getLastRow() > 1 ? sheet.getRange(sheet.getLastRow(), CONFIG.METER_READINGS_SHEET.ID + 1).getValue() : 0;
+      const newId = String(parseInt(lastId) + 1);
+
+      const newRow = new Array(sheet.getLastColumn()).fill('');
+      newRow[CONFIG.METER_READINGS_SHEET.ID] = newId;
+      newRow[CONFIG.METER_READINGS_SHEET.MONTH_YEAR] = monthYear;
+      newRow[CONFIG.METER_READINGS_SHEET.DATA] = dataJson;
+      newRow[CONFIG.METER_READINGS_SHEET.RECORD_DATE] = recordDate;
+      newRow[CONFIG.METER_READINGS_SHEET.CREATED_AT] = now;
+      newRow[CONFIG.METER_READINGS_SHEET.UPDATED_AT] = now;
+
+      sheet.appendRow(newRow);
+      sheet.getRange(sheet.getLastRow(), CONFIG.METER_READINGS_SHEET.ID + 1).setNumberFormat("@");
+      
+      // [✅ แก้ไขจุดนี้] แปลง Date Object เป็น String ก่อนส่งกลับ
+      return {
+        id: newId,
+        monthYear: monthYear,
+        data: dataArray,
+        recordDate: recordDate,
+        createdAt: now.toISOString(), // แปลง createdAt
+        updatedAt: now.toISOString()  // แปลง updatedAt
+      };
+    }
+
+  } catch (e) {
+    Logger.log(`Error in saveMeterReading: ${e.message}`);
+    throw new Error(`เกิดข้อผิดพลาดในการบันทึกข้อมูล: ${e.message}`);
+  } finally {
+    lock.releaseLock();
+  }
+  
+}
+
+function batchImportMeterReadings(payload) {
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) throw new Error("Server busy");
+
+  try {
+    const sheet = getSheet().getSheetByName(CONFIG.SHEETS.METER_READINGS);
+    const data = sheet.getDataRange().getValues();
+    const now = new Date();
+    const recordDate = now.toISOString().split('T')[0];
+
+    // สร้าง Map ของแถวที่มีอยู่ key = monthYear
+    const existingRowMap = new Map();
+    for (let i = 1; i < data.length; i++) {
+      let mYear = data[i][CONFIG.METER_READINGS_SHEET.MONTH_YEAR];
+      if (mYear instanceof Date) {
+         mYear = Utilities.formatDate(mYear, Session.getScriptTimeZone(), "MM/yyyy");
+      }
+      existingRowMap.set(mYear, i + 1); // เก็บเลขแถว (1-based)
+    }
+
+    payload.forEach(item => {
+      const monthYear = item.monthYear;
+      const importData = item.data; // Array of readings
+      const jsonStr = JSON.stringify(importData);
+
+      if (existingRowMap.has(monthYear)) {
+        // Update แถวเดิม
+        const rowIndex = existingRowMap.get(monthYear);
+        sheet.getRange(rowIndex, CONFIG.METER_READINGS_SHEET.DATA + 1).setValue(jsonStr);
+        sheet.getRange(rowIndex, CONFIG.METER_READINGS_SHEET.UPDATED_AT + 1).setValue(now);
+      } else {
+        // Insert แถวใหม่
+        const lastId = sheet.getLastRow() > 1 ? sheet.getRange(sheet.getLastRow(), CONFIG.METER_READINGS_SHEET.ID + 1).getValue() : 0;
+        const newId = String(parseInt(lastId || 0) + 1);
+        
+        const newRow = new Array(sheet.getLastColumn()).fill('');
+        newRow[CONFIG.METER_READINGS_SHEET.ID] = newId;
+        newRow[CONFIG.METER_READINGS_SHEET.MONTH_YEAR] = monthYear;
+        newRow[CONFIG.METER_READINGS_SHEET.DATA] = jsonStr;
+        newRow[CONFIG.METER_READINGS_SHEET.RECORD_DATE] = recordDate;
+        newRow[CONFIG.METER_READINGS_SHEET.CREATED_AT] = now;
+        newRow[CONFIG.METER_READINGS_SHEET.UPDATED_AT] = now;
+        
+        sheet.appendRow(newRow);
+        // อัปเดต Map เผื่อมีเดือนซ้ำใน Payload เดียวกัน (กันพลาด)
+        existingRowMap.set(monthYear, sheet.getLastRow());
+      }
+    });
+
+    return { success: true };
+
+  } catch (e) {
+    throw new Error("Batch Import Error: " + e.message);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function setup() {
+  var doc = SpreadsheetApp.getActiveSpreadsheet();
+  SCRIPT_PROP.setProperty('sheetID', doc.getId());
+  Logger.log('Sheet ID set to: ' + doc.getId());
+}
+
+function doGet(e) {
+  // หากถูกเรียกด้วย action=get_dashboard_data ให้ส่งข้อมูลกลับเป็น JSON
+  if (e.parameter.action === 'get_dashboard_data') {
+    return exportDashboardDataAsAPI();
+  }
+
+  // --- โค้ดเดิมของคุณ ---
+  if (e.parameter.page === 'liff') {
+    return HtmlService.createTemplateFromFile('liff')
+      .evaluate()
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+      .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+  }
+  return HtmlService.createTemplateFromFile('index')
+    .evaluate()
+    .addMetaTag("viewport", "width=device-width, initial-scale=1.0")
+    .setTitle('Responsive Dashboard')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+    .setSandboxMode(HtmlService.SandboxMode.IFRAME);
+}
+
+function doPost(e) {
+  var params = JSON.parse(e.postData.contents);
+  var action = params.action;
+  var result = {};
+
+  if (action == 'verify_and_link') {
+    result = verifyAndLinkTenant(params.phone, params.userId, params.displayName, params.pictureUrl);
+  } else if (action == 'check_line_status') { 
+    result = checkLineUserStatus(params.userId);
+  } else if (action == 'get_tenant_profile_and_bills') {
+    // 🟢 [เพิ่มส่วนนี้] รับคำสั่งดึงข้อมูลผู้เช่าและประวัติบิล
+    result = getTenantProfileAndBills(params.userId);
+  }
+  
+  return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+}
+
+function exportDashboardDataAsAPI() {
+  try {
+    // ใช้ฟังก์ชันที่มีอยู่แล้วในระบบ Dashboard ของคุณ
+    const rooms = getAllRoomsWithStatus() || [];
+    const tenants = getTenantList() || [];
+    const settings = getAllSystemSettings() || {};
+    
+    const dashboardData = {
+      success: true,
+      data: {
+        rooms: rooms,
+        tenants: tenants,
+        settings: settings
+      }
+    };
+    
+    return ContentService.createTextOutput(JSON.stringify(dashboardData))
+                         .setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, error: error.message }))
+                         .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+
+
+/**
+ * ฟังก์ชันสำหรับ include ไฟล์ HTML อื่นๆ (ใช้โดย doGet)
+ */
+function include(filename) {
+  return HtmlService.createHtmlOutputFromFile(filename).getContent();
+}
+
+// ✅ ฟังก์ชันใหม่ที่เพิ่มเข้ามา
+/**
+ * ดึงเนื้อหา HTML ของหน้าต่างๆ ตามชื่อที่ร้องขอ
+ * @param {string} pageName - ชื่อของไฟล์ HTML ที่ต้องการ (ไม่ต้องมี .html)
+ * @returns {string} - เนื้อหา HTML ของไฟล์นั้นๆ
+ */
+function getPageContent(pageName) {
+  // ป้องกันการเข้าถึงไฟล์ที่ไม่ต้องการ
+  const allowedPages = {
+      'register': 'form',
+      'dashboard': 'dashboard',
+      'history': 'history',
+      'rooms': 'RoomPage',
+      'meter': 'Meterpage',
+      'vehicles': 'VehiclePage',
+      'bills': 'billpage', // <-- เพิ่มบรรทัดนี้
+      'liff': 'liff',
+      // ...
+    };
+
+  const fileName = allowedPages[pageName];
+
+  if (fileName) {
+    try {
+      return include(fileName);
+    } catch (e) {
+      return `<div><p>Error: ไม่พบหน้า ${pageName} (${fileName}.html)</p></div>`;
+    }
+  }
+  return `<div><p>Error: ไม่สามารถเข้าถึงหน้า ${pageName} ได้</p></div>`;
+}
+
+
+/**
+ * ดึง URL ของ Script ปัจจุบัน (คงเดิม)
+ */
+function getScriptURL() {
+  return ScriptApp.getService().getUrl();
+}
+
+function getData(sheet) {
+  if (!sheet) throw new Error("Sheet object is null or undefined in getData");
+  
+  const lastRow = sheet.getLastRow();
+  const lastCol = sheet.getLastColumn();
+  
+  // ✅ แก้ไข: เพิ่มการเช็ค lastCol === 0 เข้าไปด้วย
+  if (lastRow === 0 || lastCol === 0) {
+    return [];
+  }
+  
+  return sheet.getRange(1, 1, lastRow, lastCol).getValues();
+}
+
+/**
+ * ดึงข้อมูล Google Sheet ที่กำหนดค่าไว้ (คงเดิม)
+ */
+function getSheet(sheetName) {
+  var id = sheetID || SCRIPT_PROP.getProperty('sheetID');
+  if (!id) throw new Error("Sheet ID is not set in Code.gs or script properties.");
+  
+  var ss = SpreadsheetApp.openById(id);
+
+  // ถ้ามีการระบุชื่อแท็บ ให้ส่งกลับเฉพาะแท็บนั้น
+  if (sheetName) {
+    var sheet = ss.getSheetByName(sheetName);
+    if (!sheet) throw new Error("ไม่พบแท็บ Sheet ชื่อ: " + sheetName + " กรุณาสร้างแท็บนี้ก่อน");
+    return sheet;
+  }
+
+  // ถ้าไม่ระบุชื่อ ส่งกลับทั้งไฟล์ (เพื่อรองรับโค้ดเก่าๆ)
+  return ss;
+}
+
+// --- System Settings API ---
+
+/**
+ * ดึงการตั้งค่าทั้งหมด (Config + Formulas)
+ */
+function getAllSystemSettings() {
+  // ค่าเริ่มต้น
+  let config = {
+    electricRate: 7,
+    waterRate: 18,
+    overdue: { enabled: false, day: 5, type: 'fixed', amount: 100 }
+  };
+  
+  const formulas = [];
+
+  try {
+    const sheet = getSheet().getSheetByName(CONFIG.SHEETS.ALL_SETTINGS);
+    if (sheet) {
+      const data = getData(sheet); // ฟังก์ชัน getData ของคุณรวม Header ด้วย
+      
+      // วนลูปตั้งแต่แถวที่ 2 (index 1) เพื่อข้าม Header
+      for (let i = 1; i < data.length; i++) {
+        const row = data[i];
+        const id = String(row[0]);
+        
+        // เช็คว่าเป็นแถว Config หรือไม่
+        if (id === 'GLOBAL_CONFIG') {
+          try {
+            // อ่านค่า JSON จากคอลัมน์ FORMULA (index 3)
+            config = JSON.parse(row[3]);
+          } catch(e) {
+            console.error("Error parsing config JSON", e);
+          }
+        } 
+        // เช็คว่าเป็นสูตร (Formula) ทั่วไป
+        else if (id && row[1]) {
+          let dateStr = "";
+           if (row[5] instanceof Date) {
+             dateStr = row[5].toISOString(); // หรือ .toLocaleDateString('th-TH')
+           } else {
+             dateStr = String(row[5]);
+            }
+           formulas.push({
+             id: id,
+             name: row[1],
+             type: row[2],
+             formula: row[3],
+             isDefault: row[4],
+             updatedAt: dateStr
+           });
+        }
+      }
+    }
+  } catch(e) {
+    console.error("Error getting settings", e);
+  }
+
+  return {
+    config: config,
+    formulas: formulas
+  };
+}
+
+/**
+ * บันทึกค่า Config ทั่วไป (Rates, Overdue) ลง Script Properties
+ */
+function saveSystemConfig(configObj) {
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(10000)) throw new Error("Server busy");
+
+  try {
+    const sheet = getSheet().getSheetByName(CONFIG.SHEETS.ALL_SETTINGS);
+    if (!sheet) throw new Error("Sheet 'AllSetting' not found");
+
+    const data = sheet.getDataRange().getValues();
+    let rowIndex = -1;
+
+    // ค้นหาแถวที่มี ID เป็น GLOBAL_CONFIG
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][0]) === 'GLOBAL_CONFIG') {
+        rowIndex = i + 1; // แปลงเป็นเลขแถว (1-based index)
+        break;
+      }
+    }
+
+    const jsonString = JSON.stringify(configObj);
+    const timestamp = new Date();
+
+    if (rowIndex > 0) {
+      // กรณีมีอยู่แล้ว -> อัปเดตเฉพาะคอลัมน์ FORMULA (4) และ UPDATED_AT (6)
+      sheet.getRange(rowIndex, 4).setValue(jsonString); 
+      sheet.getRange(rowIndex, 6).setValue(timestamp);
+    } else {
+      // กรณีไม่มี -> เพิ่มแถวใหม่
+      // ID, NAME, TYPE, FORMULA, IS_DEFAULT, UPDATED_AT
+      sheet.appendRow([
+        'GLOBAL_CONFIG', 
+        'System Configuration', 
+        'config', 
+        jsonString, 
+        false, 
+        timestamp
+      ]);
+    }
+    
+    return true;
+  } catch(e) {
+    throw new Error("Error saving config: " + e.message);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * บันทึกรายการสูตรทั้งหมดลง Sheet "AllSetting"
+ */
+function saveSystemFormulas(formulasArray) {
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(10000)) throw new Error("Server busy");
+  
+  try {
+    const sheet = getSheet().getSheetByName(CONFIG.SHEETS.ALL_SETTINGS);
+    if (!sheet) throw new Error("Sheet 'AllSetting' not found");
+    
+    // 1. อ่านข้อมูล Config เดิมเก็บไว้ก่อน (ถ้ามี)
+    let configRowData = null;
+    const data = getData(sheet);
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][0]) === 'GLOBAL_CONFIG') {
+        configRowData = data[i];
+        break;
+      }
+    }
+
+    // 2. ล้างข้อมูลเก่าทั้งหมด (ยกเว้น Header)
+    const lastRow = sheet.getLastRow();
+    if (lastRow > 1) {
+      sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).clearContent();
+    }
+    
+    const rowsToWrite = [];
+
+    // 3. ใส่ Config เดิมกลับเข้าไปเป็นแถวแรก (ถ้ามี)
+    if (configRowData) {
+      // อัปเดตวันที่ล่าสุดหน่อยก็ได้ หรือใช้ค่าเดิม
+      rowsToWrite.push(configRowData);
+    }
+
+    // 4. ใส่ข้อมูล Formula ใหม่ต่อท้าย
+    formulasArray.forEach(f => {
+      rowsToWrite.push([
+        f.id,
+        f.name,
+        f.type,
+        f.formula,
+        f.isDefault,
+        new Date()
+      ]);
+    });
+    
+    // 5. บันทึกลง Sheet ทีเดียว
+    if (rowsToWrite.length > 0) {
+      sheet.getRange(2, 1, rowsToWrite.length, rowsToWrite[0].length).setValues(rowsToWrite);
+    }
+
+    return true;
+    
+  } catch(e) {
+    throw new Error("Error saving formulas: " + e.message);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+// Re-use or Ensure this exists (เหมือนที่ใช้ใน billScript)
+function getBillSettings() {
+  try {
+    const sheet = getSheet().getSheetByName(CONFIG.SHEETS.ALL_SETTINGS);
+    if (!sheet) return [];
+    
+    const data = getData(sheet); // getData excludes header if you implemented it that way, check utility
+    // If getData returns all rows including header, slice it. Assuming getData returns raw values.
+    
+    // Manual mapping assuming getData gets everything including header (row 0)
+    // Filter out header
+    const rows = data.slice(1); 
+    
+    return rows.map(r => ({
+      id: String(r[0]),
+      name: r[1],
+      type: r[2],
+      formula: r[3],
+      isDefault: r[4],
+      updatedAt: r[5]
+    })).filter(item => item.id && item.name); // Filter empty rows
+    
+  } catch (e) {
+    console.warn(e);
+    return [];
+  }
+}
+
+
+function testReadSettings() {
+  const settings = getAllSystemSettings();
+  console.log("=== ผลการอ่านค่า ===");
+  console.log("Config:", JSON.stringify(settings.config));
+  console.log("Formulas Count:", settings.formulas.length);
+  
+  if (!settings.config || Object.keys(settings.config).length === 0) {
+    console.log("❌ ไม่พบค่า Config (ตรวจสอบชื่อ Sheet หรือ ID ในช่อง A2)");
+  } else {
+    console.log("✅ อ่านค่า Config ได้สำเร็จ!");
+  }
+}
+
+์Node.js
+const express = require('express');
+const axios = require('axios');
+
+const GAS_URL = process.env.GAS_URL; // ใส่ URL ของคุณ
+const MEMBER_MENU_ID = process.env.MEMBER_MENU_ID; // ใส่ ID ของ Member Menu ที่ได้จากการสร้างเมนู
+
+// ฟังก์ชันเปลี่ยน Rich Menu
+async function linkRichMenu(userId, richMenuId) {
+    try {
+        await axios.post(`https://api.line.me/v2/bot/user/${userId}/richmenu/${richMenuId}`, {}, {
+            headers: { 'Authorization': `Bearer ${process.env.LINE_CHANNEL_ACCESS_TOKEN}` }
+        });
+        console.log(`✅ Switched menu for ${userId} to ${richMenuId}`);
+    } catch (error) {
+        console.error('❌ Error switching rich menu:', error.response?.data || error.message);
+    }
+}
+
+// ส่ง io เข้ามาเพื่อให้เรียกใช้ io.emit ได้
+module.exports = function (io) {
+    const router = express.Router();
+
+    router.post('/check-phone', async (req, res) => {
+        try {
+            const response = await axios.post(GAS_URL, { action: 'check_phone', phone: req.body.phone });
+            res.json(response.data);
+        } catch (error) {
+            console.error("Error checking phone:", error.message);
+            res.status(500).json({ error: 'Check failed' });
+        }
+    });
+
+    router.post('/save-tenant', async (req, res) => {
+        try {
+            const response = await axios.post(GAS_URL, { action: 'save_tenant', payload: req.body });
+            res.json(response.data);
+        } catch (error) {
+            console.error("Error saving tenant:", error.message);
+            res.status(500).json({ success: false, message: 'Save failed' });
+        }
+    });
+
+    router.post('/liff-verify', async (req, res) => {
+        try {
+            const { userId, displayName, pictureUrl, phone } = req.body;
+            if (!userId || !phone) return res.status(400).json({ success: false, message: 'ข้อมูลไม่ครบถ้วน' });
+
+            const response = await axios.post(GAS_URL, { action: 'verify_and_link', userId, displayName, pictureUrl, phone });
+            res.json(response.data);
+        } catch (error) {
+            console.error("Error linking line user:", error.message);
+            res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์' });
+        }
+    });
+
+    router.post('/check-line-status', async (req, res) => {
+        try {
+            const { userId } = req.body;
+            const response = await axios.post(GAS_URL, { action: 'check_line_status', userId });
+
+            if (response.data.linked) {
+                console.log(`User ${userId} is already linked. Switching to Member Menu...`);
+                await linkRichMenu(userId, MEMBER_MENU_ID);
+            }
+
+            res.json(response.data);
+        } catch (error) {
+            console.error("Error checking status:", error.message);
+            res.status(500).json({ linked: false });
+        }
+    });
+
+    router.post('/verify-line-user', async (req, res) => {
+        try {
+            const { userId, displayName, pictureUrl, phone } = req.body;
+            if (!userId || !phone) return res.status(400).json({ success: false, message: 'ข้อมูลไม่ครบถ้วน' });
+
+            const response = await axios.post(GAS_URL, { action: 'verify_and_link', userId, displayName, pictureUrl, phone });
+
+            if (response.data.success) {
+                await linkRichMenu(userId, MEMBER_MENU_ID);
+                console.log(`User Linked: ${phone} -> Sending signal to Admin...`);
+                
+                // ใช้ Socket แจ้งเตือนแอดมิน
+                io.emit('server-update-tenant', {
+                    tenantId: response.data.tenant.id,
+                    lineUserId: userId,
+                    success: true
+                });
+            }
+            res.json(response.data);
+        } catch (error) {
+            console.error("Error linking line user:", error.message);
+            res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์' });
+        }
+    });
+
+    router.post('/webhook-bill-updated', (req, res) => {
+        try {
+            const { monthYear, count } = req.body;
+            console.log(`🔔 Received Webhook: Bill Updated for ${monthYear} (${count} items)`);
+            
+            // ใช้ Socket กระจายข้อมูลให้หน้าบ้านอัปเดต
+            io.emit('server-bill-updated', { monthYear, timestamp: new Date().getTime() });
+            
+            res.json({ success: true, message: 'Broadcast sent to clients' });
+        } catch (error) {
+            console.error("Webhook Error:", error.message);
+            res.status(500).json({ success: false });
+        }
+    });
+
+    // ดึงข้อมูลผู้เช่าและประวัติบิลทั้งหมดของตัวเอง (สำหรับ LIFF)
+    router.post('/get-tenant-info', async (req, res) => {
+        try {
+            const { userId } = req.body;
+            if (!userId) {
+                return res.status(400).json({ success: false, message: 'ไม่พบ User ID' });
+            }
+
+            // ส่ง Action ไปให้ Google Apps Script ประมวลผล
+            const response = await axios.post(GAS_URL, { 
+                action: 'get_tenant_info', 
+                userId: userId 
+            });
+
+            res.json(response.data);
+        } catch (error) {
+            console.error("Error getting tenant info:", error.message);
+            res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการดึงข้อมูลจากเซิร์ฟเวอร์' });
+        }
+    });
+
+    
+
+    return router;
+};
+
+require('dotenv').config();
+const express = require('express');
+const http = require('http');
+const { Server } = require("socket.io");
+const bodyParser = require('body-parser');
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
+
+// นำเข้าโมดูลที่เราแยกไว้
+const botHandler = require('./bot/botHandler');
+const apiRoutes = require('./routes/api');
+
+// ==========================================
+// 1. LINE Webhook (ต้องอยู่ก่อน Body Parser เสมอ!)
+// ==========================================
+app.use('/webhook', botHandler.router);
+
+// ==========================================
+// 2. Middleware ทั่วไป & Static Files
+// ==========================================
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(express.static('public')); 
+
+// ==========================================
+// 3. Web APIs (ส่ง io เข้าไปเพื่อให้ API สั่งแจ้งเตือน Socket ได้)
+// ==========================================
+app.use('/api', apiRoutes(io));
+
+// ==========================================
+// 4. Socket.io Connection
+// ==========================================
+io.on('connection', (socket) => {
+    console.log('🔗 Admin Dashboard connected via Socket:', socket.id);
+    socket.on('disconnect', () => console.log('❌ Admin Dashboard disconnected'));
+});
+
+// เริ่มรันเซิร์ฟเวอร์
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, async () => {
+    console.log(`🚀 Server เปิดแล้วที่ Port: ${PORT}`);
+    await botHandler.initializeBrain(); // สั่งให้บอทเริ่มอ่านข้อมูลตอนเปิดเซิร์ฟเวอร์
+});
+
+========================================================================
+
+คำสั่ง : เพิ่มการเชื่อม ESP32 เเล้วสร้าง Daseborad เข้าไปใน หน้ารายการมิเตอร์ให้ตั้งค่า ฝากสคริป RealTime ไปกับ Node.js ได้มั้ย
+
+=======================================================================
+#include <ModbusMaster.h>
+
+// --- กำหนดขาของ ESP32 ที่ต่อกับ MAX485 ---
+#define MAX485_RE_DE 4
+#define RX_PIN 16 // ต่อกับขา RO
+#define TX_PIN 17 // ต่อกับขา DI
+
+// --- กำหนดขา NTC Thermistor และ Buzzer ---
+#define NTC_PIN 34      // ใช้พิน 34 (Analog Input)
+#define BUZZER_PIN 5    // ขาควบคุม Buzzer (Low-Level Trigger)
+
+// --- กำหนดเงื่อนไขแจ้งเตือน (ปรับเปลี่ยนได้ตามต้องการ) ---
+const float MAX_TEMP = 40.0;  // อุณหภูมิสูงสุดที่ยอมรับได้ (องศาเซลเซียส)
+const float MAX_POWER = 5.0;  // กำลังไฟฟ้าสูงสุดที่ยอมรับได้ (กิโลวัตต์)
+
+ModbusMaster node;
+
+// ฟังก์ชันควบคุมทิศทางขา DE/RE ของ MAX485
+void preTransmission() {
+  digitalWrite(MAX485_RE_DE, 1);
+}
+void postTransmission() {
+  digitalWrite(MAX485_RE_DE, 0);
+}
+
+// ฟังก์ชันแปลงค่า 16-bit register 2 ตัวให้เป็น Float (32-bit)
+float getFloatFromRegisters(uint16_t reg1, uint16_t reg2) {
+  union {
+    uint32_t i;
+    float f;
+  } u;
+  
+  // การเรียงข้อมูล (Endianness)
+  u.i = ((uint32_t)reg1 << 16) | reg2; 
+  return u.f;
+}
+
+// ฟังก์ชันอ่านค่า Analog จากโมดูล NTC เป็นองศาเซลเซียส
+float getTemperatureNTC() {
+  int analogValue = 0;
+  // อ่านค่า 10 ครั้งแล้วหาค่าเฉลี่ยเพื่อให้ตัวเลขนิ้งขึ้น
+  for(int i = 0; i < 10; i++) {
+    analogValue += analogRead(NTC_PIN);
+    delay(10);
+  }
+  analogValue = analogValue / 10;
+
+  // ป้องกันค่า Error
+  if(analogValue == 0 || analogValue == 4095) return -999.0;
+
+  // คำนวณค่าความต้านทาน (อ้างอิง Voltage Divider 10k)
+  float resistance = 10000.0 * (4095.0 / (float)analogValue - 1.0);
+  
+  // สมการ Steinhart-Hart คำนวณอุณหภูมิ (B-Value ~ 3950)
+  float tempK = 1.0 / (1.0 / 298.15 + (1.0 / 3950.0) * log(resistance / 10000.0));
+  return tempK - 273.15; // แปลงเคลวินเป็นเซลเซียส
+}
+
+// ฟังก์ชันย่อยสำหรับอ่านค่าและแสดงผล (เปลี่ยนให้ return ค่า float กลับมาด้วย)
+float readMeterValue(uint16_t address, const char* label, const char* unit) {
+  uint8_t result = node.readHoldingRegisters(address, 2);
+  float value = -999.0; // ค่าเริ่มต้นกรณี Error
+  
+  if (result == node.ku8MBSuccess) {
+    uint16_t reg1 = node.getResponseBuffer(0);
+    uint16_t reg2 = node.getResponseBuffer(1);
+    value = getFloatFromRegisters(reg1, reg2);
+    
+    Serial.print(label);
+    Serial.print(": ");
+    Serial.print(value);
+    Serial.print(" ");
+    Serial.println(unit);
+  } else {
+    Serial.print("Failed to read ");
+    Serial.print(label);
+    Serial.print(" (Error: 0x");
+    Serial.print(result, HEX);
+    Serial.println(")");
+  }
+  
+  // หน่วงเวลาเล็กน้อยระหว่างการส่งคำสั่งแต่ละชุด เพื่อไม่ให้มิเตอร์ประมวลผลไม่ทัน
+  delay(100); 
+  return value;
+}
+
+void setup() {
+  Serial.begin(115200);
+  
+  // ตั้งค่าพิน MAX485
+  pinMode(MAX485_RE_DE, OUTPUT);
+  digitalWrite(MAX485_RE_DE, 0);
+
+  // ตั้งค่าพิน Buzzer
+  pinMode(BUZZER_PIN, OUTPUT);
+  digitalWrite(BUZZER_PIN, HIGH); // สั่ง HIGH เพื่อให้ Buzzer เงียบก่อน
+
+  // ตั้งค่า Baudrate
+  Serial2.begin(9600, SERIAL_8N1, RX_PIN, TX_PIN);
+
+  // ตั้งค่า Slave ID เป็น 1
+  node.begin(1, Serial2);
+  node.preTransmission(preTransmission);
+  node.postTransmission(postTransmission);
+
+  Serial.println("System Ready! Monitoring Meter and Temperature...");
+  delay(2000);
+}
+
+void loop() {
+  Serial.println("=============================");
+  
+  // --- 1. ส่วนอ่านค่าจากเซ็นเซอร์อุณหภูมิ NTC ---
+  float tempC = getTemperatureNTC();
+  if (tempC == -999.0) {
+    Serial.println("Temp Sensor : Error / Disconnected!");
+  } else {
+    Serial.print("Cabinet Temp: ");
+    Serial.print(tempC);
+    Serial.println(" C");
+  }
+
+  // --- 2. ส่วนอ่านค่าจากมิเตอร์ไฟฟ้า (Modbus) ---
+  // อ่านค่าหน่วยก้านไฟฟ้า (kWh)
+  readMeterValue(0,   "Total Energy    ", "kWh");
+  
+  Serial.println("--- Voltage ---");
+  readMeterValue(100, "Phase A Voltage ", "V");
+  readMeterValue(102, "Phase B Voltage ", "V");
+  readMeterValue(104, "Phase C Voltage ", "V");
+
+  Serial.println("--- Current ---");
+  readMeterValue(106, "Phase A Current ", "A");
+  readMeterValue(108, "Phase B Current ", "A");
+  readMeterValue(110, "Phase C Current ", "A");
+
+  Serial.println("--- Power & Freq ---");
+  // เก็บค่ากำลังไฟฟ้ารวมไว้ในตัวแปร totalPower เพื่อไปเช็คเงื่อนไข
+  float totalPower = readMeterValue(118, "Total Power     ", "kW");
+  readMeterValue(144, "Frequency       ", "Hz");
+
+  Serial.println("=============================\n");
+  
+  // --- 3. ส่วนระบบแจ้งเตือน (Alarm Logic) ---
+  bool isOverheat = (tempC > MAX_TEMP && tempC != -999.0);
+  bool isOverload = (totalPower > MAX_POWER && totalPower != -999.0);
+
+  if (isOverheat || isOverload) {
+    digitalWrite(BUZZER_PIN, LOW); // สั่ง LOW เพื่อให้ Buzzer ส่งเสียงดัง
+    
+    Serial.println("!!! ALARM TRIGGERED !!!");
+    if (isOverheat) Serial.println("-> OVERHEAT DETECTED");
+    if (isOverload) Serial.println("-> OVERLOAD DETECTED");
+  } else {
+    digitalWrite(BUZZER_PIN, HIGH); // สั่ง HIGH ให้ Buzzer เงียบ
+  }
+
+  // หน่วงเวลา 2 วินาทีก่อนเริ่มอ่านลูปใหม่ทั้งหมด
+  delay(2000); 
+}

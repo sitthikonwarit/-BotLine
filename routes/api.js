@@ -80,7 +80,7 @@ module.exports = function (io) {
             if (response.data.success) {
                 await linkRichMenu(userId, MEMBER_MENU_ID);
                 console.log(`User Linked: ${phone} -> Sending signal to Admin...`);
-                
+
                 // ใช้ Socket แจ้งเตือนแอดมิน
                 io.emit('server-update-tenant', {
                     tenantId: response.data.tenant.id,
@@ -99,10 +99,10 @@ module.exports = function (io) {
         try {
             const { monthYear, count } = req.body;
             console.log(`🔔 Received Webhook: Bill Updated for ${monthYear} (${count} items)`);
-            
+
             // ใช้ Socket กระจายข้อมูลให้หน้าบ้านอัปเดต
             io.emit('server-bill-updated', { monthYear, timestamp: new Date().getTime() });
-            
+
             res.json({ success: true, message: 'Broadcast sent to clients' });
         } catch (error) {
             console.error("Webhook Error:", error.message);
@@ -119,9 +119,9 @@ module.exports = function (io) {
             }
 
             // ส่ง Action ไปให้ Google Apps Script ประมวลผล
-            const response = await axios.post(GAS_URL, { 
-                action: 'get_tenant_info', 
-                userId: userId 
+            const response = await axios.post(GAS_URL, {
+                action: 'get_tenant_info',
+                userId: userId
             });
 
             res.json(response.data);
@@ -131,22 +131,45 @@ module.exports = function (io) {
         }
     });
 
-    router.post('/esp-update', (req, res) => {
-        try {
-            const meterData = req.body;
-            console.log("⚡ Real-time Meter Data Received:", meterData);
-            
-            // กระจายข้อมูลไปยัง Front-end ทั้งหมดที่ต่อ Socket.io อยู่
-            io.emit('server-realtime-meter', meterData);
-            
-            res.status(200).json({ success: true, message: 'Data broadcasted' });
-        } catch (error) {
-            console.error("Error processing ESP data:", error.message);
-            res.status(500).json({ success: false });
-        }
+    let deviceStatus = {};
+
+    router.post('/meter/update-iot', (req, res) => {
+        const { roomId, energy, voltage, temp, status } = req.body;
+        const timestamp = new Date().getTime();
+
+        // บันทึกสถานะอุปกรณ์
+        deviceStatus[roomId] = {
+            lastSeen: timestamp,
+            isOnline: true
+        };
+
+        // 1. ส่งข้อมูล Real-time ไปยังหน้า Dashboard ทันที
+        io.emit('iot-meter-update', {
+            roomId,
+            energy,
+            voltage,
+            temp,
+            isOnline: true,
+            timestamp
+        });
+
+        res.json({ success: true });
     });
 
-    
+    // ฟังก์ชันตรวจสอบอุปกรณ์ที่เงียบไปเกิน 5 นาที (Offline)
+    setInterval(() => {
+        const now = new Date().getTime();
+        Object.keys(deviceStatus).forEach(roomId => {
+            if (now - deviceStatus[roomId].lastSeen > 300000) { // 5 นาที
+                if (deviceStatus[roomId].isOnline) {
+                    deviceStatus[roomId].isOnline = false;
+                    io.emit('iot-device-offline', { roomId });
+                }
+            }
+        });
+    }, 60000);
+
+
 
     return router;
 };
