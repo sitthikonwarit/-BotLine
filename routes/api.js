@@ -134,20 +134,21 @@ module.exports = function (io) {
     let deviceStatus = {};
 
     router.post('/meter/update-iot', (req, res) => {
-        const { roomId, energy, voltage, temp, status } = req.body;
+        // เพิ่มการรับค่า current และ power
+        const { roomId, energy, voltage, current, power, temp, status } = req.body;
         const timestamp = new Date().getTime();
 
-        // บันทึกสถานะอุปกรณ์
         deviceStatus[roomId] = {
             lastSeen: timestamp,
             isOnline: true
         };
 
-        // 1. ส่งข้อมูล Real-time ไปยังหน้า Dashboard ทันที
         io.emit('iot-meter-update', {
             roomId,
             energy,
             voltage,
+            current,  // เพิ่ม
+            power,    // เพิ่ม
             temp,
             isOnline: true,
             timestamp
