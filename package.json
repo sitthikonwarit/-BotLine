@@ -21,6 +21,7 @@
     "google-auth-library": "^10.5.0",
     "google-spreadsheet": "^5.2.0",
     "hnswlib-node": "^3.0.0",
-    "langchain": "^0.2.20"
+    "langchain": "^0.2.20",
+    "socket.io": "^4.8.3"
   }
 }
