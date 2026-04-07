@@ -16,6 +16,8 @@ async function linkRichMenu(userId, richMenuId) {
     }
 }
 
+let modbusConfigurations = [];
+
 // ส่ง io เข้ามาเพื่อให้เรียกใช้ io.emit ได้
 module.exports = function (io) {
     const router = express.Router();
@@ -131,44 +133,44 @@ module.exports = function (io) {
         }
     });
 
-    let deviceStatus = {};
-
-    router.post('/meter/update-iot', (req, res) => {
-        // เพิ่มการรับค่า current และ power
-        const { roomId, energy, voltage, current, power, temp, status } = req.body;
-        const timestamp = new Date().getTime();
-
-        deviceStatus[roomId] = {
-            lastSeen: timestamp,
-            isOnline: true
-        };
-
-        io.emit('iot-meter-update', {
-            roomId,
-            energy,
-            voltage,
-            current,  // เพิ่ม
-            power,    // เพิ่ม
-            temp,
-            isOnline: true,
-            timestamp
-        });
-
-        res.json({ success: true });
+    router.get('/live-meter-config', (req, res) => {
+        res.json(modbusConfigurations);
     });
 
-    // ฟังก์ชันตรวจสอบอุปกรณ์ที่เงียบไปเกิน 5 นาที (Offline)
-    setInterval(() => {
-        const now = new Date().getTime();
-        Object.keys(deviceStatus).forEach(roomId => {
-            if (now - deviceStatus[roomId].lastSeen > 300000) { // 5 นาที
-                if (deviceStatus[roomId].isOnline) {
-                    deviceStatus[roomId].isOnline = false;
-                    io.emit('iot-device-offline', { roomId });
-                }
-            }
-        });
-    }, 60000);
+    router.post('/live-meter-config', (req, res) => {
+        const { roomId, slaveId, type } = req.body;
+        
+        // เช็คว่ามี Slave ID นี้อยู่แล้วไหม ถ้ามีให้อัปเดต
+        const existingIndex = modbusConfigurations.findIndex(c => c.slaveId === slaveId);
+        if (existingIndex >= 0) {
+            modbusConfigurations[existingIndex] = { roomId, slaveId, type };
+        } else {
+            modbusConfigurations.push({ roomId, slaveId, type });
+        }
+
+        res.json({ success: true, data: modbusConfigurations });
+    });
+
+    // ==========================================
+    // 3. API รับข้อมูลดิบจาก ESP32 Hardware
+    // ==========================================
+    // ESP32 จะต้องยิง HTTP POST มาที่พาร์ทนี้ พร้อมแนบ JSON
+    router.post('/hw-meter-ingest', (req, res) => {
+        /*
+          ตัวอย่าง Payload ที่ ESP32 ต้องส่งมา:
+          { "slaveId": 1, "voltage": 225.4, "current": 4.2, "power": 0.94, "energy": 1054.2 }
+        */
+        const meterData = req.body;
+
+        if (!meterData || meterData.slaveId === undefined) {
+            return res.status(400).json({ error: "Invalid Payload" });
+        }
+
+        // กระจายข้อมูลไปให้หน้าเว็บที่เปิด Live Meter อยู่ผ่าน Socket.io
+        io.emit('live-meter-update', meterData);
+
+        res.json({ success: true, message: "Data received" });
+    });
 
 
 

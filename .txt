@@ -1,238 +1,3 @@
-<div id="meterGroupCard" class="custom-card">
-  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
-    <h5 class="form-section-title mb-0" style="border-bottom: none;">รายการจดมิเตอร์</h5>
-    <div class="d-flex align-items-center flex-wrap gap-2">
-      <button type="button" id="exportMeterBtn" class="btn btn-outline-secondary d-inline-flex align-items-center">
-        <i class="fas fa-file-export me-2"></i>
-        <span class="btn-text">Export</span>
-      </button>
-      <button type="button" id="importMeterBtn" class="btn btn-outline-secondary d-inline-flex align-items-center">
-          <i class="fas fa-file-import me-2"></i>
-          <span class="btn-text">Import</span>
-        </button>
-
-      <input type="file" id="meterCsvInput" accept=".csv" style="display: none;">
-      <button id="showMeterFormBtn" class="btn btn-primary d-inline-flex align-items-center">
-        <i class="fas fa-plus me-2"></i>
-        <span class="btn-text">เพิ่มจดบันทึก</span>
-      </button>
-    </div>
-  </div>
-
-  <div class="row g-2 mb-3 align-items-center">
-    <div class="col-12 col-lg">
-      <div class="search-container flex-grow-1">
-        <i class="fas fa-search"></i>
-        <input type="text" id="searchMeterGroup" class="form-control" placeholder="ค้นหาด้วยเดือน, ปี..." style="padding-left: 40px;">
-      </div>
-    </div>
-    <div class="col-12 col-md-auto">
-      <div class="d-flex align-items-center flex-shrink-0 gap-2">
-        <div class="btn-group" role="group" aria-label="View switch">
-          <button type="button" class="btn btn-outline-secondary view-btn-meter active" id="view-btn-meter-list" title="List View"><i class="fas fa-list"></i></button>
-          <button type="button" class="btn btn-outline-secondary view-btn-meter" id="view-btn-meter-grid" title="Grid View"><i class="fas fa-th-large"></i></button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="nicescrollbar" style="max-height: 650px; overflow: auto;">
-    <div id="meter-group-container" class="mt-3">
-      <div class="text-center text-muted p-5">กำลังโหลดข้อมูลการจดมิเตอร์...</div>
-    </div>
-  </div>
-</div>
-
-<div id="meterDetailCard" class="custom-card" style="display: none;">
-  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
-    <h5 id="meter-detail-title" class="form-section-title mb-0" style="border-bottom: none;">รายละเอียด</h5>
-    <div class="d-flex gap-2">
-      <button id="printMeterDetailBtn" class="btn btn-outline-secondary d-inline-flex align-items-center">
-        <i class="fas fa-print me-2"></i>
-        <span class="btn-text">พิมพ์</span>
-      </button>
-
-      <button id="goToMeterEditBtn" class="btn btn-primary d-inline-flex align-items-center">
-        <i class="fas fa-edit me-2"></i>
-        <span class="btn-text">ไปที่หน้าแก้ไข</span>
-      </button>
-    </div>
-  </div>
-
-  <div class="row g-2 mb-3 align-items-center no-print">
-    <div class="col-12 col-lg">
-      <div class="search-container flex-grow-1">
-        <i class="fas fa-search"></i>
-        <input type="text" id="searchMeterDetailRoom" class="form-control" placeholder="ค้นหาเลขห้อง, ผู้เช่า..." style="padding-left: 40px;">
-      </div>
-    </div>
-    <div class="col-12 col-md-auto" style="min-width: 250px;">
-      <select id="filterMeterDetailTower" class="select2" multiple="multiple" data-placeholder="กรองตามตึก">
-      </select>
-    </div>
-  </div>
-  <div class="table-responsive-wrapper mt-3 nicescrollbar" style="max-height: 538px; overflow: auto;">
-    <table class="table table-mainstyle table-hover" id="meter-detail-table">
-      <thead>
-        <tr>
-          <th class="text-center" style="width: 100px;">เลขห้อง</th>
-          <th>ผู้เช่า</th>
-          <th class="text-end" style="width: 100px;">
-            <i class="fas fa-tint text-primary me-1"></i>น้ำก่อน
-          </th>
-          <th class="text-end" style="width: 100px;">
-            <i class="fas fa-tint text-primary me-1"></i>น้ำนี้
-          </th>
-          <th class="text-end" style="width: 100px;">
-            <i class="fas fa-tint text-primary me-1"></i>หน่วย
-          </th>
-          <th class="text-end" style="width: 100px;">
-            <i class="fas fa-bolt text-warning me-1"></i>ไฟก่อน
-          </th>
-          <th class="text-end" style="width: 100px;">
-            <i class="fas fa-bolt text-warning me-1"></i>ไฟนี้
-          </th>
-          <th class="text-end" style="width: 100px;">
-            <i class="fas fa-bolt text-warning me-1"></i>หน่วย
-          </th>
-          <th class="text-end" style="width: 15%;">อัปเดตล่าสุด</th>
-        </tr>
-      </thead>
-      <tbody id="meter-detail-table-container">
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<div id="meterFormCard" class="custom-card" style="display: none;">
-  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
-    <h5 id="meter-form-title" class="form-section-title mb-0" style="border-bottom: none;">เพิ่มจดบันทึก</h5>
-  </div>
-
-  <div class="row g-2 mb-3 align-items-center">
-    <div class="col-12 col-md-6">
-      <label for="meterYearSelect" class="form-label mb-1 small">ปี (พ.ศ.)<span class="text-danger">*</span></label>
-      <select id="meterYearSelect" class="form-select select2" style="width: 100%;">
-      </select>
-    </div>
-
-    <div class="col-12 col-md-6">
-      <label for="meterMonthSelect" class="form-label mb-1 small">เดือน<span class="text-danger">*</span></label>
-      <select id="meterMonthSelect" class="form-select select2" style="width: 100%;">
-      </select>
-    </div>
-
-    <div class="row g-2 mb-3 align-items-center">
-      <div class="col-12 col-lg">
-        <div class="search-container flex-grow-1">
-          <i class="fas fa-search"></i>
-          <input type="text" id="searchMeterRoom" class="form-control" placeholder="ค้นหาเลขห้อง, ผู้เช่า..." style="padding-left: 40px;">
-        </div>
-      </div>
-      <div class="col-12 col-md-auto " style="min-width: 250px;">
-        <select id="filterMeterTower" class="select2" multiple="multiple" data-placeholder="กรองตามตึก">
-      </select>
-      </div>
-    </div>
-
-    <div class="table-responsive-wrapper mt-3 nicescrollbar" style="max-height: 538px; overflow: auto;">
-      <table class="table table-mainstyle table-hover" id="meter-reading-table">
-        <thead>
-          <tr>
-            <th class="text-center" style="width: 100px;">เลขห้อง</th>
-            <th>ผู้เช่า</th>
-            <th class="text-end" style="width: 120px;">
-              <i class="fas fa-tint text-primary me-1"></i>น้ำก่อน
-            </th>
-            <th class="text-end" style="width: 120px;">
-              <i class="fas fa-tint text-primary me-1"></i>น้ำนี้
-            </th>
-            <th class="text-end" style="width: 100px;">
-              <i class="fas fa-tint text-primary me-1"></i>หน่วย
-            </th>
-            <th class="text-end" style="width: 120px;">
-              <i class="fas fa-bolt text-warning me-1"></i>ไฟก่อน
-            </th>
-            <th class="text-end" style="width: 120px;">
-              <i class="fas fa-bolt text-warning me-1"></i>ไฟนี้
-            </th>
-            <th class="text-end" style="width: 100px;">
-              <i class="fas fa-bolt text-warning me-1"></i>หน่วย
-            </th>
-            <th class="text-center" style="width: 80px;">จัดการ</th>
-          </tr>
-        </thead>
-        <tbody id="meter-reading-form-container">
-          <tr>
-            <td colspan="9" class="text-center text-muted p-5">กำลังโหลดข้อมูลห้องพัก...</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="col-12 text-center mt-4">
-      <button type="button" id="saveMeterReadingsBtn" class="btn btn-primary submit-btn"><i class="fas fa-paper-plane"></i>บันทึก</button>
-    </div>
-  </div>
-</div>
-
-
-
-<div class="modal fade" id="meterImportModal" tabindex="-1" aria-hidden="true" style="padding-top : 0px">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content">
-      <div class="modal-header border-0 pb-0">
-        <h5 class="modal-title fw-bold">นำเข้าข้อมูลจดมิเตอร์จาก CSV</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body pt-2">
-
-        <div class="import-modal-body">
-          <div id="meter-import-view-upload">
-            <div id="meter-import-drop-area" class="import-drop-area">
-              <input type="file" id="meterCsvInput" class="d-none" accept=".csv">
-              <i class="fas fa-cloud-upload-alt upload-icon"></i>
-              <p class="mb-1 mt-3">ลากไฟล์มาวางที่นี่ หรือ <strong class="">คลิกเพื่อเลือกไฟล์</strong></p>
-              <small class="text-muted">รองรับไฟล์ .csv (UTF-8)</small>
-              <p id="meterFileNameDisplay" class="file-name-display mt-2 text-success fw-bold"></p>
-            </div>
-
-            <div class="template-download-link text-center mt-3">
-              <span class="text-muted">ยังไม่มีไฟล์?</span>
-              <a href="#" id="downloadMeterTemplateLink" class="text-decoration-none">ดาวน์โหลดเทมเพลตที่นี่</a>
-            </div>
-          </div>
-
-          <div id="meter-import-view-preview" style="display: none;">
-            <p class="preview-title">ตรวจสอบข้อมูลก่อนนำเข้า</p>
-            <div class="preview-table-container">
-              <table id="meter-preview-table" class="table table-hover">
-                <thead>
-                  <tr>
-                    <th>เลขห้อง</th>
-                    <th><i class="fas fa-tint text-primary me-1"></i>ค่าน้ำ</th>
-                    <th><i class="fas fa-bolt text-warning me-1"></i>ค่าไฟ</th>
-                    <th>สถานะ</th>
-                  </tr>
-                </thead>
-                <tbody>
-                </tbody>
-              </table>
-            </div>
-            <div class="preview-summary">
-              พบข้อมูลทั้งหมด <strong id="meter-preview-record-count">0</strong> รายการ
-            </div>
-            <div class="preview-actions">
-              <button type="button" id="meterCancelImportBtn" class="btn btn-outline-secondary">ยกเลิก</button>
-              <button type="button" id="meterConfirmImportBtn" class="btn btn-primary">ยืนยันการนำเข้า</button>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-</div>
-
 <script>
     let meterAppInitialized = false;
     let allMeterReadings = [];
@@ -2453,6 +2218,241 @@ function renderPreviewTable(data) {
 
 </script>
 
+<div id="meterGroupCard" class="custom-card">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+    <h5 class="form-section-title mb-0" style="border-bottom: none;">รายการจดมิเตอร์</h5>
+    <div class="d-flex align-items-center flex-wrap gap-2">
+      <button type="button" id="exportMeterBtn" class="btn btn-outline-secondary d-inline-flex align-items-center">
+        <i class="fas fa-file-export me-2"></i>
+        <span class="btn-text">Export</span>
+      </button>
+      <button type="button" id="importMeterBtn" class="btn btn-outline-secondary d-inline-flex align-items-center">
+          <i class="fas fa-file-import me-2"></i>
+          <span class="btn-text">Import</span>
+        </button>
+
+      <input type="file" id="meterCsvInput" accept=".csv" style="display: none;">
+      <button id="showMeterFormBtn" class="btn btn-primary d-inline-flex align-items-center">
+        <i class="fas fa-plus me-2"></i>
+        <span class="btn-text">เพิ่มจดบันทึก</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="row g-2 mb-3 align-items-center">
+    <div class="col-12 col-lg">
+      <div class="search-container flex-grow-1">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchMeterGroup" class="form-control" placeholder="ค้นหาด้วยเดือน, ปี..." style="padding-left: 40px;">
+      </div>
+    </div>
+    <div class="col-12 col-md-auto">
+      <div class="d-flex align-items-center flex-shrink-0 gap-2">
+        <div class="btn-group" role="group" aria-label="View switch">
+          <button type="button" class="btn btn-outline-secondary view-btn-meter active" id="view-btn-meter-list" title="List View"><i class="fas fa-list"></i></button>
+          <button type="button" class="btn btn-outline-secondary view-btn-meter" id="view-btn-meter-grid" title="Grid View"><i class="fas fa-th-large"></i></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nicescrollbar" style="max-height: 650px; overflow: auto;">
+    <div id="meter-group-container" class="mt-3">
+      <div class="text-center text-muted p-5">กำลังโหลดข้อมูลการจดมิเตอร์...</div>
+    </div>
+  </div>
+</div>
+
+<div id="meterDetailCard" class="custom-card" style="display: none;">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+    <h5 id="meter-detail-title" class="form-section-title mb-0" style="border-bottom: none;">รายละเอียด</h5>
+    <div class="d-flex gap-2">
+      <button id="printMeterDetailBtn" class="btn btn-outline-secondary d-inline-flex align-items-center">
+        <i class="fas fa-print me-2"></i>
+        <span class="btn-text">พิมพ์</span>
+      </button>
+
+      <button id="goToMeterEditBtn" class="btn btn-primary d-inline-flex align-items-center">
+        <i class="fas fa-edit me-2"></i>
+        <span class="btn-text">ไปที่หน้าแก้ไข</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="row g-2 mb-3 align-items-center no-print">
+    <div class="col-12 col-lg">
+      <div class="search-container flex-grow-1">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchMeterDetailRoom" class="form-control" placeholder="ค้นหาเลขห้อง, ผู้เช่า..." style="padding-left: 40px;">
+      </div>
+    </div>
+    <div class="col-12 col-md-auto" style="min-width: 250px;">
+      <select id="filterMeterDetailTower" class="select2" multiple="multiple" data-placeholder="กรองตามตึก">
+      </select>
+    </div>
+  </div>
+  <div class="table-responsive-wrapper mt-3 nicescrollbar" style="max-height: 538px; overflow: auto;">
+    <table class="table table-mainstyle table-hover" id="meter-detail-table">
+      <thead>
+        <tr>
+          <th class="text-center" style="width: 100px;">เลขห้อง</th>
+          <th>ผู้เช่า</th>
+          <th class="text-end" style="width: 100px;">
+            <i class="fas fa-tint text-primary me-1"></i>น้ำก่อน
+          </th>
+          <th class="text-end" style="width: 100px;">
+            <i class="fas fa-tint text-primary me-1"></i>น้ำนี้
+          </th>
+          <th class="text-end" style="width: 100px;">
+            <i class="fas fa-tint text-primary me-1"></i>หน่วย
+          </th>
+          <th class="text-end" style="width: 100px;">
+            <i class="fas fa-bolt text-warning me-1"></i>ไฟก่อน
+          </th>
+          <th class="text-end" style="width: 100px;">
+            <i class="fas fa-bolt text-warning me-1"></i>ไฟนี้
+          </th>
+          <th class="text-end" style="width: 100px;">
+            <i class="fas fa-bolt text-warning me-1"></i>หน่วย
+          </th>
+          <th class="text-end" style="width: 15%;">อัปเดตล่าสุด</th>
+        </tr>
+      </thead>
+      <tbody id="meter-detail-table-container">
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div id="meterFormCard" class="custom-card" style="display: none;">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+    <h5 id="meter-form-title" class="form-section-title mb-0" style="border-bottom: none;">เพิ่มจดบันทึก</h5>
+  </div>
+
+  <div class="row g-2 mb-3 align-items-center">
+    <div class="col-12 col-md-6">
+      <label for="meterYearSelect" class="form-label mb-1 small">ปี (พ.ศ.)<span class="text-danger">*</span></label>
+      <select id="meterYearSelect" class="form-select select2" style="width: 100%;">
+      </select>
+    </div>
+
+    <div class="col-12 col-md-6">
+      <label for="meterMonthSelect" class="form-label mb-1 small">เดือน<span class="text-danger">*</span></label>
+      <select id="meterMonthSelect" class="form-select select2" style="width: 100%;">
+      </select>
+    </div>
+
+    <div class="row g-2 mb-3 align-items-center">
+      <div class="col-12 col-lg">
+        <div class="search-container flex-grow-1">
+          <i class="fas fa-search"></i>
+          <input type="text" id="searchMeterRoom" class="form-control" placeholder="ค้นหาเลขห้อง, ผู้เช่า..." style="padding-left: 40px;">
+        </div>
+      </div>
+      <div class="col-12 col-md-auto " style="min-width: 250px;">
+        <select id="filterMeterTower" class="select2" multiple="multiple" data-placeholder="กรองตามตึก">
+      </select>
+      </div>
+    </div>
+
+    <div class="table-responsive-wrapper mt-3 nicescrollbar" style="max-height: 538px; overflow: auto;">
+      <table class="table table-mainstyle table-hover" id="meter-reading-table">
+        <thead>
+          <tr>
+            <th class="text-center" style="width: 100px;">เลขห้อง</th>
+            <th>ผู้เช่า</th>
+            <th class="text-end" style="width: 120px;">
+              <i class="fas fa-tint text-primary me-1"></i>น้ำก่อน
+            </th>
+            <th class="text-end" style="width: 120px;">
+              <i class="fas fa-tint text-primary me-1"></i>น้ำนี้
+            </th>
+            <th class="text-end" style="width: 100px;">
+              <i class="fas fa-tint text-primary me-1"></i>หน่วย
+            </th>
+            <th class="text-end" style="width: 120px;">
+              <i class="fas fa-bolt text-warning me-1"></i>ไฟก่อน
+            </th>
+            <th class="text-end" style="width: 120px;">
+              <i class="fas fa-bolt text-warning me-1"></i>ไฟนี้
+            </th>
+            <th class="text-end" style="width: 100px;">
+              <i class="fas fa-bolt text-warning me-1"></i>หน่วย
+            </th>
+            <th class="text-center" style="width: 80px;">จัดการ</th>
+          </tr>
+        </thead>
+        <tbody id="meter-reading-form-container">
+          <tr>
+            <td colspan="9" class="text-center text-muted p-5">กำลังโหลดข้อมูลห้องพัก...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col-12 text-center mt-4">
+      <button type="button" id="saveMeterReadingsBtn" class="btn btn-primary submit-btn"><i class="fas fa-paper-plane"></i>บันทึก</button>
+    </div>
+  </div>
+</div>
+
+
+
+<div class="modal fade" id="meterImportModal" tabindex="-1" aria-hidden="true" style="padding-top : 0px">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">นำเข้าข้อมูลจดมิเตอร์จาก CSV</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-2">
+
+        <div class="import-modal-body">
+          <div id="meter-import-view-upload">
+            <div id="meter-import-drop-area" class="import-drop-area">
+              <input type="file" id="meterCsvInput" class="d-none" accept=".csv">
+              <i class="fas fa-cloud-upload-alt upload-icon"></i>
+              <p class="mb-1 mt-3">ลากไฟล์มาวางที่นี่ หรือ <strong class="">คลิกเพื่อเลือกไฟล์</strong></p>
+              <small class="text-muted">รองรับไฟล์ .csv (UTF-8)</small>
+              <p id="meterFileNameDisplay" class="file-name-display mt-2 text-success fw-bold"></p>
+            </div>
+
+            <div class="template-download-link text-center mt-3">
+              <span class="text-muted">ยังไม่มีไฟล์?</span>
+              <a href="#" id="downloadMeterTemplateLink" class="text-decoration-none">ดาวน์โหลดเทมเพลตที่นี่</a>
+            </div>
+          </div>
+
+          <div id="meter-import-view-preview" style="display: none;">
+            <p class="preview-title">ตรวจสอบข้อมูลก่อนนำเข้า</p>
+            <div class="preview-table-container">
+              <table id="meter-preview-table" class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>เลขห้อง</th>
+                    <th><i class="fas fa-tint text-primary me-1"></i>ค่าน้ำ</th>
+                    <th><i class="fas fa-bolt text-warning me-1"></i>ค่าไฟ</th>
+                    <th>สถานะ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
+            </div>
+            <div class="preview-summary">
+              พบข้อมูลทั้งหมด <strong id="meter-preview-record-count">0</strong> รายการ
+            </div>
+            <div class="preview-actions">
+              <button type="button" id="meterCancelImportBtn" class="btn btn-outline-secondary">ยกเลิก</button>
+              <button type="button" id="meterConfirmImportBtn" class="btn btn-primary">ยืนยันการนำเข้า</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
 function getMeterReadings() {
  try {
   const sheet = getSheet().getSheetByName(CONFIG.SHEETS.METER_READINGS);
@@ -2487,7 +2487,7 @@ function getMeterReadings() {
    if (recordDateValue instanceof Date) {
     recordDateValue = recordDateValue.toISOString().split('T')[0];
    }
-      
+      
       // --- 3. แปลง createdAt (จุดแก้ไขสำคัญ) ---
       let createdAtValue = row[CONFIG.METER_READINGS_SHEET.CREATED_AT];
       if (createdAtValue instanceof Date) {
@@ -2506,16 +2506,16 @@ function getMeterReadings() {
     data: readingData,
     recordDate: recordDateValue, // String "YYYY-MM-DD" or ""
     createdAt: createdAtValue, // String (ISO)
-    updatedAt: updatedAtValue  // String (ISO)
+    updatedAt: updatedAtValue  // String (ISO)
    };
   });
-    
-  Logger.log(`Mapped data (before filter): ${JSON.stringify(mappedData.map(d => ({id: d.id, monthYear: d.monthYear, createdAt: d.createdAt})))}`); 
+    
+  Logger.log(`Mapped data (before filter): ${JSON.stringify(mappedData.map(d => ({id: d.id, monthYear: d.monthYear, createdAt: d.createdAt})))}`); 
 
   const filteredData = mappedData.filter(group => group.id && group.monthYear);
 
   // Log ข้อมูลสุดท้ายที่จะส่งกลับไป
-  Logger.log(`FINAL data being sent to client: ${JSON.stringify(filteredData)}`); 
+  Logger.log(`FINAL data being sent to client: ${JSON.stringify(filteredData)}`); 
 
   return filteredData;
 
@@ -2537,7 +2537,7 @@ function saveMeterReading(monthYear, recordDate, dataArray) {
     const sheet = getSheet().getSheetByName(CONFIG.SHEETS.METER_READINGS);
     const data = sheet.getDataRange().getValues();
     const now = new Date();
-    
+    
     // ค้นหาแถวที่มีอยู่สำหรับ monthYear นี้
     let rowIndex = -1;
     for (let i = 1; i < data.length; i++) {
@@ -2548,7 +2548,7 @@ function saveMeterReading(monthYear, recordDate, dataArray) {
          const year = cellValue.getFullYear();
          cellValue = `${month}/${year}`;
       }
-      
+      
       if (cellValue === monthYear) {
         rowIndex = i + 1; // 1-based index
         break;
@@ -2565,7 +2565,7 @@ function saveMeterReading(monthYear, recordDate, dataArray) {
       sheet.getRange(rowIndex, CONFIG.METER_READINGS_SHEET.DATA + 1).setValue(dataJson);
       sheet.getRange(rowIndex, CONFIG.METER_READINGS_SHEET.RECORD_DATE + 1).setValue(recordDate);
       sheet.getRange(rowIndex, CONFIG.METER_READINGS_SHEET.UPDATED_AT + 1).setValue(now);
-      
+      
       // [✅ แก้ไขจุดนี้] แปลง Date Object เป็น String ก่อนส่งกลับ
       return {
         id: rowId,
@@ -2591,7 +2591,7 @@ function saveMeterReading(monthYear, recordDate, dataArray) {
 
       sheet.appendRow(newRow);
       sheet.getRange(sheet.getLastRow(), CONFIG.METER_READINGS_SHEET.ID + 1).setNumberFormat("@");
-      
+      
       // [✅ แก้ไขจุดนี้] แปลง Date Object เป็น String ก่อนส่งกลับ
       return {
         id: newId,
@@ -2599,7 +2599,7 @@ function saveMeterReading(monthYear, recordDate, dataArray) {
         data: dataArray,
         recordDate: recordDate,
         createdAt: now.toISOString(), // แปลง createdAt
-        updatedAt: now.toISOString()  // แปลง updatedAt
+        updatedAt: now.toISOString()  // แปลง updatedAt
       };
     }
 
@@ -2609,7 +2609,7 @@ function saveMeterReading(monthYear, recordDate, dataArray) {
   } finally {
     lock.releaseLock();
   }
-  
+  
 }
 
 function batchImportMeterReadings(payload) {
@@ -2646,7 +2646,7 @@ function batchImportMeterReadings(payload) {
         // Insert แถวใหม่
         const lastId = sheet.getLastRow() > 1 ? sheet.getRange(sheet.getLastRow(), CONFIG.METER_READINGS_SHEET.ID + 1).getValue() : 0;
         const newId = String(parseInt(lastId || 0) + 1);
-        
+        
         const newRow = new Array(sheet.getLastColumn()).fill('');
         newRow[CONFIG.METER_READINGS_SHEET.ID] = newId;
         newRow[CONFIG.METER_READINGS_SHEET.MONTH_YEAR] = monthYear;
@@ -2654,7 +2654,7 @@ function batchImportMeterReadings(payload) {
         newRow[CONFIG.METER_READINGS_SHEET.RECORD_DATE] = recordDate;
         newRow[CONFIG.METER_READINGS_SHEET.CREATED_AT] = now;
         newRow[CONFIG.METER_READINGS_SHEET.UPDATED_AT] = now;
-        
+        
         sheet.appendRow(newRow);
         // อัปเดต Map เผื่อมีเดือนซ้ำใน Payload เดียวกัน (กันพลาด)
         existingRowMap.set(monthYear, sheet.getLastRow());
@@ -2670,6 +2670,8 @@ function batchImportMeterReadings(payload) {
   }
 }
 
+ * ตั้งค่า Script โดยการบันทึก ID ของ Spreadsheet
+ */
 function setup() {
   var doc = SpreadsheetApp.getActiveSpreadsheet();
   SCRIPT_PROP.setProperty('sheetID', doc.getId());
@@ -2704,13 +2706,13 @@ function doPost(e) {
 
   if (action == 'verify_and_link') {
     result = verifyAndLinkTenant(params.phone, params.userId, params.displayName, params.pictureUrl);
-  } else if (action == 'check_line_status') { 
+  } else if (action == 'check_line_status') { 
     result = checkLineUserStatus(params.userId);
   } else if (action == 'get_tenant_profile_and_bills') {
     // 🟢 [เพิ่มส่วนนี้] รับคำสั่งดึงข้อมูลผู้เช่าและประวัติบิล
     result = getTenantProfileAndBills(params.userId);
   }
-  
+  
   return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
 }
 
@@ -2720,7 +2722,7 @@ function exportDashboardDataAsAPI() {
     const rooms = getAllRoomsWithStatus() || [];
     const tenants = getTenantList() || [];
     const settings = getAllSystemSettings() || {};
-    
+    
     const dashboardData = {
       success: true,
       data: {
@@ -2729,7 +2731,7 @@ function exportDashboardDataAsAPI() {
         settings: settings
       }
     };
-    
+    
     return ContentService.createTextOutput(JSON.stringify(dashboardData))
                          .setMimeType(ContentService.MimeType.JSON);
   } catch (error) {
@@ -2789,15 +2791,15 @@ function getScriptURL() {
 
 function getData(sheet) {
   if (!sheet) throw new Error("Sheet object is null or undefined in getData");
-  
+  
   const lastRow = sheet.getLastRow();
   const lastCol = sheet.getLastColumn();
-  
+  
   // ✅ แก้ไข: เพิ่มการเช็ค lastCol === 0 เข้าไปด้วย
   if (lastRow === 0 || lastCol === 0) {
     return [];
   }
-  
+  
   return sheet.getRange(1, 1, lastRow, lastCol).getValues();
 }
 
@@ -2807,7 +2809,7 @@ function getData(sheet) {
 function getSheet(sheetName) {
   var id = sheetID || SCRIPT_PROP.getProperty('sheetID');
   if (!id) throw new Error("Sheet ID is not set in Code.gs or script properties.");
-  
+  
   var ss = SpreadsheetApp.openById(id);
 
   // ถ้ามีการระบุชื่อแท็บ ให้ส่งกลับเฉพาะแท็บนั้น
@@ -2833,19 +2835,19 @@ function getAllSystemSettings() {
     waterRate: 18,
     overdue: { enabled: false, day: 5, type: 'fixed', amount: 100 }
   };
-  
+  
   const formulas = [];
 
   try {
     const sheet = getSheet().getSheetByName(CONFIG.SHEETS.ALL_SETTINGS);
     if (sheet) {
       const data = getData(sheet); // ฟังก์ชัน getData ของคุณรวม Header ด้วย
-      
+      
       // วนลูปตั้งแต่แถวที่ 2 (index 1) เพื่อข้าม Header
       for (let i = 1; i < data.length; i++) {
         const row = data[i];
         const id = String(row[0]);
-        
+        
         // เช็คว่าเป็นแถว Config หรือไม่
         if (id === 'GLOBAL_CONFIG') {
           try {
@@ -2854,7 +2856,7 @@ function getAllSystemSettings() {
           } catch(e) {
             console.error("Error parsing config JSON", e);
           }
-        } 
+        } 
         // เช็คว่าเป็นสูตร (Formula) ทั่วไป
         else if (id && row[1]) {
           let dateStr = "";
@@ -2911,21 +2913,21 @@ function saveSystemConfig(configObj) {
 
     if (rowIndex > 0) {
       // กรณีมีอยู่แล้ว -> อัปเดตเฉพาะคอลัมน์ FORMULA (4) และ UPDATED_AT (6)
-      sheet.getRange(rowIndex, 4).setValue(jsonString); 
+      sheet.getRange(rowIndex, 4).setValue(jsonString); 
       sheet.getRange(rowIndex, 6).setValue(timestamp);
     } else {
       // กรณีไม่มี -> เพิ่มแถวใหม่
       // ID, NAME, TYPE, FORMULA, IS_DEFAULT, UPDATED_AT
       sheet.appendRow([
-        'GLOBAL_CONFIG', 
-        'System Configuration', 
-        'config', 
-        jsonString, 
-        false, 
+        'GLOBAL_CONFIG', 
+        'System Configuration', 
+        'config', 
+        jsonString, 
+        false, 
         timestamp
       ]);
     }
-    
+    
     return true;
   } catch(e) {
     throw new Error("Error saving config: " + e.message);
@@ -2940,11 +2942,11 @@ function saveSystemConfig(configObj) {
 function saveSystemFormulas(formulasArray) {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(10000)) throw new Error("Server busy");
-  
+  
   try {
     const sheet = getSheet().getSheetByName(CONFIG.SHEETS.ALL_SETTINGS);
     if (!sheet) throw new Error("Sheet 'AllSetting' not found");
-    
+    
     // 1. อ่านข้อมูล Config เดิมเก็บไว้ก่อน (ถ้ามี)
     let configRowData = null;
     const data = getData(sheet);
@@ -2960,7 +2962,7 @@ function saveSystemFormulas(formulasArray) {
     if (lastRow > 1) {
       sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).clearContent();
     }
-    
+    
     const rowsToWrite = [];
 
     // 3. ใส่ Config เดิมกลับเข้าไปเป็นแถวแรก (ถ้ามี)
@@ -2980,14 +2982,14 @@ function saveSystemFormulas(formulasArray) {
         new Date()
       ]);
     });
-    
+    
     // 5. บันทึกลง Sheet ทีเดียว
     if (rowsToWrite.length > 0) {
       sheet.getRange(2, 1, rowsToWrite.length, rowsToWrite[0].length).setValues(rowsToWrite);
     }
 
     return true;
-    
+    
   } catch(e) {
     throw new Error("Error saving formulas: " + e.message);
   } finally {
@@ -3000,14 +3002,14 @@ function getBillSettings() {
   try {
     const sheet = getSheet().getSheetByName(CONFIG.SHEETS.ALL_SETTINGS);
     if (!sheet) return [];
-    
+    
     const data = getData(sheet); // getData excludes header if you implemented it that way, check utility
     // If getData returns all rows including header, slice it. Assuming getData returns raw values.
-    
+    
     // Manual mapping assuming getData gets everything including header (row 0)
     // Filter out header
-    const rows = data.slice(1); 
-    
+    const rows = data.slice(1); 
+    
     return rows.map(r => ({
       id: String(r[0]),
       name: r[1],
@@ -3016,7 +3018,7 @@ function getBillSettings() {
       isDefault: r[4],
       updatedAt: r[5]
     })).filter(item => item.id && item.name); // Filter empty rows
-    
+    
   } catch (e) {
     console.warn(e);
     return [];
@@ -3029,7 +3031,7 @@ function testReadSettings() {
   console.log("=== ผลการอ่านค่า ===");
   console.log("Config:", JSON.stringify(settings.config));
   console.log("Formulas Count:", settings.formulas.length);
-  
+  
   if (!settings.config || Object.keys(settings.config).length === 0) {
     console.log("❌ ไม่พบค่า Config (ตรวจสอบชื่อ Sheet หรือ ID ในช่อง A2)");
   } else {
@@ -3037,7 +3039,169 @@ function testReadSettings() {
   }
 }
 
-์Node.js
+=================================================================
+
+#include <ModbusMaster.h>
+
+// --- กำหนดขาของ ESP32 ที่ต่อกับ MAX485 ---
+#define MAX485_RE_DE 4
+#define RX_PIN 16 // ต่อกับขา RO
+#define TX_PIN 17 // ต่อกับขา DI
+
+// --- กำหนดขา NTC Thermistor และ Buzzer ---
+#define NTC_PIN 34   // ใช้พิน 34 (Analog Input)
+#define BUZZER_PIN 5  // ขาควบคุม Buzzer (Low-Level Trigger)
+
+// --- กำหนดเงื่อนไขแจ้งเตือน (ปรับเปลี่ยนได้ตามต้องการ) ---
+const float MAX_TEMP = 40.0; // อุณหภูมิสูงสุดที่ยอมรับได้ (องศาเซลเซียส)
+const float MAX_POWER = 5.0; // กำลังไฟฟ้าสูงสุดที่ยอมรับได้ (กิโลวัตต์)
+
+ModbusMaster node;
+
+// ฟังก์ชันควบคุมทิศทางขา DE/RE ของ MAX485
+void preTransmission() {
+ digitalWrite(MAX485_RE_DE, 1);
+}
+void postTransmission() {
+ digitalWrite(MAX485_RE_DE, 0);
+}
+
+// ฟังก์ชันแปลงค่า 16-bit register 2 ตัวให้เป็น Float (32-bit)
+float getFloatFromRegisters(uint16_t reg1, uint16_t reg2) {
+ union {
+  uint32_t i;
+  float f;
+ } u;
+
+ // การเรียงข้อมูล (Endianness)
+ u.i = ((uint32_t)reg1 << 16) | reg2;
+ return u.f;
+}
+
+// ฟังก์ชันอ่านค่า Analog จากโมดูล NTC เป็นองศาเซลเซียส
+float getTemperatureNTC() {
+  int analogValue = analogRead(NTC_PIN);
+  Serial.print("Raw Analog Value: "); 
+  Serial.println(analogValue); // ดูว่าค่าที่ได้คืออะไร (0-4095)
+
+  if(analogValue >= 4090) {
+    Serial.println("Error: Sensor Disconnected or Open Circuit!");
+    return -999.0;
+  }
+
+ // คำนวณค่าความต้านทาน (อ้างอิง Voltage Divider 10k)
+ float resistance = 10000.0 * (4095.0 / (float)analogValue - 1.0);
+
+ // สมการ Steinhart-Hart คำนวณอุณหภูมิ (B-Value ~ 3950)
+ float tempK = 1.0 / (1.0 / 298.15 + (1.0 / 3950.0) * log(resistance / 10000.0));
+ return tempK - 273.15; // แปลงเคลวินเป็นเซลเซียส
+}
+
+// ฟังก์ชันย่อยสำหรับอ่านค่าและแสดงผล (เปลี่ยนให้ return ค่า float กลับมาด้วย)
+float readMeterValue(uint16_t address, const char* label, const char* unit) {
+ uint8_t result = node.readHoldingRegisters(address, 2);
+ float value = -999.0; // ค่าเริ่มต้นกรณี Error
+
+ if (result == node.ku8MBSuccess) {
+  uint16_t reg1 = node.getResponseBuffer(0);
+  uint16_t reg2 = node.getResponseBuffer(1);
+  value = getFloatFromRegisters(reg1, reg2);
+ 
+  Serial.print(label);
+  Serial.print(": ");
+  Serial.print(value);
+  Serial.print(" ");
+  Serial.println(unit);
+ } else {
+  Serial.print("Failed to read ");
+  Serial.print(label);
+  Serial.print(" (Error: 0x");
+  Serial.print(result, HEX);
+  Serial.println(")");
+ }
+
+ // หน่วงเวลาเล็กน้อยระหว่างการส่งคำสั่งแต่ละชุด เพื่อไม่ให้มิเตอร์ประมวลผลไม่ทัน
+ delay(100);
+ return value;
+}
+
+void setup() {
+ Serial.begin(115200);
+
+ // ตั้งค่าพิน MAX485
+ pinMode(MAX485_RE_DE, OUTPUT);
+ digitalWrite(MAX485_RE_DE, 0);
+
+ // ตั้งค่าพิน Buzzer
+ pinMode(BUZZER_PIN, OUTPUT);
+ digitalWrite(BUZZER_PIN, HIGH); // สั่ง HIGH เพื่อให้ Buzzer เงียบก่อน
+
+ // ตั้งค่า Baudrate
+ Serial2.begin(9600, SERIAL_8N1, RX_PIN, TX_PIN);
+
+ // ตั้งค่า Slave ID เป็น 1
+ node.begin(1, Serial2);
+ node.preTransmission(preTransmission);
+ node.postTransmission(postTransmission);
+
+ Serial.println("System Ready! Monitoring Meter and Temperature...");
+ delay(2000);
+}
+
+void loop() {
+ Serial.println("=============================");
+
+ // --- 1. ส่วนอ่านค่าจากเซ็นเซอร์อุณหภูมิ NTC ---
+ float tempC = getTemperatureNTC();
+ if (tempC == -999.0) {
+  Serial.println("Temp Sensor : Error / Disconnected!");
+ } else {
+  Serial.print("Cabinet Temp: ");
+  Serial.print(tempC);
+  Serial.println(" C");
+ }
+
+ // --- 2. ส่วนอ่านค่าจากมิเตอร์ไฟฟ้า (Modbus) ---
+ // อ่านค่าหน่วยก้านไฟฟ้า (kWh)
+ readMeterValue(0, "Total Energy  ", "kWh");
+
+ Serial.println("--- Voltage ---");
+ readMeterValue(100, "Phase A Voltage ", "V");
+ readMeterValue(102, "Phase B Voltage ", "V");
+ readMeterValue(104, "Phase C Voltage ", "V");
+
+ Serial.println("--- Current ---");
+ readMeterValue(106, "Phase A Current ", "A");
+ readMeterValue(108, "Phase B Current ", "A");
+ readMeterValue(110, "Phase C Current ", "A");
+
+ Serial.println("--- Power & Freq ---");
+ // เก็บค่ากำลังไฟฟ้ารวมไว้ในตัวแปร totalPower เพื่อไปเช็คเงื่อนไข
+ float totalPower = readMeterValue(118, "Total Power  ", "kW");
+ readMeterValue(144, "Frequency   ", "Hz");
+
+ Serial.println("=============================\n");
+
+ // --- 3. ส่วนระบบแจ้งเตือน (Alarm Logic) ---
+ bool isOverheat = (tempC > MAX_TEMP && tempC != -999.0);
+ bool isOverload = (totalPower > MAX_POWER && totalPower != -999.0);
+
+ if (isOverheat || isOverload) {
+  digitalWrite(BUZZER_PIN, LOW); // สั่ง LOW เพื่อให้ Buzzer ส่งเสียงดัง
+ 
+  Serial.println("!!! ALARM TRIGGERED !!!");
+  if (isOverheat) Serial.println("-> OVERHEAT DETECTED");
+  if (isOverload) Serial.println("-> OVERLOAD DETECTED");
+ } else {
+  digitalWrite(BUZZER_PIN, HIGH); // สั่ง HIGH ให้ Buzzer เงียบ
+ }
+
+ // หน่วงเวลา 2 วินาทีก่อนเริ่มอ่านลูปใหม่ทั้งหมด
+ delay(2000);
+}
+
+===========================================================
+
 const express = require('express');
 const axios = require('axios');
 
@@ -3120,7 +3284,7 @@ module.exports = function (io) {
             if (response.data.success) {
                 await linkRichMenu(userId, MEMBER_MENU_ID);
                 console.log(`User Linked: ${phone} -> Sending signal to Admin...`);
-                
+
                 // ใช้ Socket แจ้งเตือนแอดมิน
                 io.emit('server-update-tenant', {
                     tenantId: response.data.tenant.id,
@@ -3139,10 +3303,10 @@ module.exports = function (io) {
         try {
             const { monthYear, count } = req.body;
             console.log(`🔔 Received Webhook: Bill Updated for ${monthYear} (${count} items)`);
-            
+
             // ใช้ Socket กระจายข้อมูลให้หน้าบ้านอัปเดต
             io.emit('server-bill-updated', { monthYear, timestamp: new Date().getTime() });
-            
+
             res.json({ success: true, message: 'Broadcast sent to clients' });
         } catch (error) {
             console.error("Webhook Error:", error.message);
@@ -3159,9 +3323,9 @@ module.exports = function (io) {
             }
 
             // ส่ง Action ไปให้ Google Apps Script ประมวลผล
-            const response = await axios.post(GAS_URL, { 
-                action: 'get_tenant_info', 
-                userId: userId 
+            const response = await axios.post(GAS_URL, {
+                action: 'get_tenant_info',
+                userId: userId
             });
 
             res.json(response.data);
@@ -3171,223 +3335,10 @@ module.exports = function (io) {
         }
     });
 
-    
+
 
     return router;
 };
 
-require('dotenv').config();
-const express = require('express');
-const http = require('http');
-const { Server } = require("socket.io");
-const bodyParser = require('body-parser');
 
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-    }
-});
-
-// นำเข้าโมดูลที่เราแยกไว้
-const botHandler = require('./bot/botHandler');
-const apiRoutes = require('./routes/api');
-
-// ==========================================
-// 1. LINE Webhook (ต้องอยู่ก่อน Body Parser เสมอ!)
-// ==========================================
-app.use('/webhook', botHandler.router);
-
-// ==========================================
-// 2. Middleware ทั่วไป & Static Files
-// ==========================================
-app.use(bodyParser.json({ limit: '50mb' }));
-app.use(express.static('public')); 
-
-// ==========================================
-// 3. Web APIs (ส่ง io เข้าไปเพื่อให้ API สั่งแจ้งเตือน Socket ได้)
-// ==========================================
-app.use('/api', apiRoutes(io));
-
-// ==========================================
-// 4. Socket.io Connection
-// ==========================================
-io.on('connection', (socket) => {
-    console.log('🔗 Admin Dashboard connected via Socket:', socket.id);
-    socket.on('disconnect', () => console.log('❌ Admin Dashboard disconnected'));
-});
-
-// เริ่มรันเซิร์ฟเวอร์
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, async () => {
-    console.log(`🚀 Server เปิดแล้วที่ Port: ${PORT}`);
-    await botHandler.initializeBrain(); // สั่งให้บอทเริ่มอ่านข้อมูลตอนเปิดเซิร์ฟเวอร์
-});
-
-========================================================================
-
-คำสั่ง : เพิ่มการเชื่อม ESP32 เเล้วสร้าง Daseborad เข้าไปใน หน้ารายการมิเตอร์ให้ตั้งค่า ฝากสคริป RealTime ไปกับ Node.js ได้มั้ย
-
-=======================================================================
-#include <ModbusMaster.h>
-
-// --- กำหนดขาของ ESP32 ที่ต่อกับ MAX485 ---
-#define MAX485_RE_DE 4
-#define RX_PIN 16 // ต่อกับขา RO
-#define TX_PIN 17 // ต่อกับขา DI
-
-// --- กำหนดขา NTC Thermistor และ Buzzer ---
-#define NTC_PIN 34      // ใช้พิน 34 (Analog Input)
-#define BUZZER_PIN 5    // ขาควบคุม Buzzer (Low-Level Trigger)
-
-// --- กำหนดเงื่อนไขแจ้งเตือน (ปรับเปลี่ยนได้ตามต้องการ) ---
-const float MAX_TEMP = 40.0;  // อุณหภูมิสูงสุดที่ยอมรับได้ (องศาเซลเซียส)
-const float MAX_POWER = 5.0;  // กำลังไฟฟ้าสูงสุดที่ยอมรับได้ (กิโลวัตต์)
-
-ModbusMaster node;
-
-// ฟังก์ชันควบคุมทิศทางขา DE/RE ของ MAX485
-void preTransmission() {
-  digitalWrite(MAX485_RE_DE, 1);
-}
-void postTransmission() {
-  digitalWrite(MAX485_RE_DE, 0);
-}
-
-// ฟังก์ชันแปลงค่า 16-bit register 2 ตัวให้เป็น Float (32-bit)
-float getFloatFromRegisters(uint16_t reg1, uint16_t reg2) {
-  union {
-    uint32_t i;
-    float f;
-  } u;
-  
-  // การเรียงข้อมูล (Endianness)
-  u.i = ((uint32_t)reg1 << 16) | reg2; 
-  return u.f;
-}
-
-// ฟังก์ชันอ่านค่า Analog จากโมดูล NTC เป็นองศาเซลเซียส
-float getTemperatureNTC() {
-  int analogValue = 0;
-  // อ่านค่า 10 ครั้งแล้วหาค่าเฉลี่ยเพื่อให้ตัวเลขนิ้งขึ้น
-  for(int i = 0; i < 10; i++) {
-    analogValue += analogRead(NTC_PIN);
-    delay(10);
-  }
-  analogValue = analogValue / 10;
-
-  // ป้องกันค่า Error
-  if(analogValue == 0 || analogValue == 4095) return -999.0;
-
-  // คำนวณค่าความต้านทาน (อ้างอิง Voltage Divider 10k)
-  float resistance = 10000.0 * (4095.0 / (float)analogValue - 1.0);
-  
-  // สมการ Steinhart-Hart คำนวณอุณหภูมิ (B-Value ~ 3950)
-  float tempK = 1.0 / (1.0 / 298.15 + (1.0 / 3950.0) * log(resistance / 10000.0));
-  return tempK - 273.15; // แปลงเคลวินเป็นเซลเซียส
-}
-
-// ฟังก์ชันย่อยสำหรับอ่านค่าและแสดงผล (เปลี่ยนให้ return ค่า float กลับมาด้วย)
-float readMeterValue(uint16_t address, const char* label, const char* unit) {
-  uint8_t result = node.readHoldingRegisters(address, 2);
-  float value = -999.0; // ค่าเริ่มต้นกรณี Error
-  
-  if (result == node.ku8MBSuccess) {
-    uint16_t reg1 = node.getResponseBuffer(0);
-    uint16_t reg2 = node.getResponseBuffer(1);
-    value = getFloatFromRegisters(reg1, reg2);
-    
-    Serial.print(label);
-    Serial.print(": ");
-    Serial.print(value);
-    Serial.print(" ");
-    Serial.println(unit);
-  } else {
-    Serial.print("Failed to read ");
-    Serial.print(label);
-    Serial.print(" (Error: 0x");
-    Serial.print(result, HEX);
-    Serial.println(")");
-  }
-  
-  // หน่วงเวลาเล็กน้อยระหว่างการส่งคำสั่งแต่ละชุด เพื่อไม่ให้มิเตอร์ประมวลผลไม่ทัน
-  delay(100); 
-  return value;
-}
-
-void setup() {
-  Serial.begin(115200);
-  
-  // ตั้งค่าพิน MAX485
-  pinMode(MAX485_RE_DE, OUTPUT);
-  digitalWrite(MAX485_RE_DE, 0);
-
-  // ตั้งค่าพิน Buzzer
-  pinMode(BUZZER_PIN, OUTPUT);
-  digitalWrite(BUZZER_PIN, HIGH); // สั่ง HIGH เพื่อให้ Buzzer เงียบก่อน
-
-  // ตั้งค่า Baudrate
-  Serial2.begin(9600, SERIAL_8N1, RX_PIN, TX_PIN);
-
-  // ตั้งค่า Slave ID เป็น 1
-  node.begin(1, Serial2);
-  node.preTransmission(preTransmission);
-  node.postTransmission(postTransmission);
-
-  Serial.println("System Ready! Monitoring Meter and Temperature...");
-  delay(2000);
-}
-
-void loop() {
-  Serial.println("=============================");
-  
-  // --- 1. ส่วนอ่านค่าจากเซ็นเซอร์อุณหภูมิ NTC ---
-  float tempC = getTemperatureNTC();
-  if (tempC == -999.0) {
-    Serial.println("Temp Sensor : Error / Disconnected!");
-  } else {
-    Serial.print("Cabinet Temp: ");
-    Serial.print(tempC);
-    Serial.println(" C");
-  }
-
-  // --- 2. ส่วนอ่านค่าจากมิเตอร์ไฟฟ้า (Modbus) ---
-  // อ่านค่าหน่วยก้านไฟฟ้า (kWh)
-  readMeterValue(0,   "Total Energy    ", "kWh");
-  
-  Serial.println("--- Voltage ---");
-  readMeterValue(100, "Phase A Voltage ", "V");
-  readMeterValue(102, "Phase B Voltage ", "V");
-  readMeterValue(104, "Phase C Voltage ", "V");
-
-  Serial.println("--- Current ---");
-  readMeterValue(106, "Phase A Current ", "A");
-  readMeterValue(108, "Phase B Current ", "A");
-  readMeterValue(110, "Phase C Current ", "A");
-
-  Serial.println("--- Power & Freq ---");
-  // เก็บค่ากำลังไฟฟ้ารวมไว้ในตัวแปร totalPower เพื่อไปเช็คเงื่อนไข
-  float totalPower = readMeterValue(118, "Total Power     ", "kW");
-  readMeterValue(144, "Frequency       ", "Hz");
-
-  Serial.println("=============================\n");
-  
-  // --- 3. ส่วนระบบแจ้งเตือน (Alarm Logic) ---
-  bool isOverheat = (tempC > MAX_TEMP && tempC != -999.0);
-  bool isOverload = (totalPower > MAX_POWER && totalPower != -999.0);
-
-  if (isOverheat || isOverload) {
-    digitalWrite(BUZZER_PIN, LOW); // สั่ง LOW เพื่อให้ Buzzer ส่งเสียงดัง
-    
-    Serial.println("!!! ALARM TRIGGERED !!!");
-    if (isOverheat) Serial.println("-> OVERHEAT DETECTED");
-    if (isOverload) Serial.println("-> OVERLOAD DETECTED");
-  } else {
-    digitalWrite(BUZZER_PIN, HIGH); // สั่ง HIGH ให้ Buzzer เงียบ
-  }
-
-  // หน่วงเวลา 2 วินาทีก่อนเริ่มอ่านลูปใหม่ทั้งหมด
-  delay(2000); 
-}
+ ทำทางเข้าดูหน่วยมิเตอร์เเบบ RealTime ด้วยการใช้ Nodejs มาเป็นตัวช่วย ให้หน่อยในหน้า meterGroupCard เป็นหน้า LiveMeter เเละ ในหน้า LiveMeter  มีการเพิ่มมิเตอร์ที่จะเชื่อมต่อตั้งค่า Modbus ได้เองเลย Slave ID ได้เองเเละ เเละเลือกห้องที่จะเชื่อมได้ 
