@@ -10,7 +10,7 @@ const creds = require('../credentials.json');
 
 // --- LangChain & AI ---
 const { ChatOpenAI, OpenAIEmbeddings } = require('@langchain/openai');
-const { MemoryVectorStore } = await import("langchain/vectorstores/memory");
+const { MemoryVectorStore } = require("langchain/vectorstores/memory");
 const { Document } = require('@langchain/core/documents');
 const { ChatPromptTemplate } = require('@langchain/core/prompts');
 
