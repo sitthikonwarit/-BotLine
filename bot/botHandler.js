@@ -10,7 +10,21 @@ const creds = require('../credentials.json');
 
 // --- LangChain & AI ---
 const { ChatOpenAI, OpenAIEmbeddings } = require('@langchain/openai');
-const { MemoryVectorStore } = await import("langchain/vectorstores/memory");
+let MemoryVectorStore;
+
+async function initLangChain() {
+    if (!MemoryVectorStore) {
+        const memoryModule = await import("langchain/vectorstores/memory");
+        MemoryVectorStore = memoryModule.MemoryVectorStore;
+    }
+}
+
+async function processMessage(message) {
+    await initLangChain(); // Ensure it's loaded before using it
+    
+    // Now you can use MemoryVectorStore
+    // const vectorStore = await MemoryVectorStore.fromTexts(...);
+}
 const { Document } = require('@langchain/core/documents');
 const { ChatPromptTemplate } = require('@langchain/core/prompts');
 
@@ -494,4 +508,4 @@ router.post('/', line.middleware(config), async (req, res) => {
     }
 });
 
-module.exports = { router, initializeBrain };
+module.exports = { router, initializeBrain , initLangChain};
