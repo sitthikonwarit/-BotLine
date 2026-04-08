@@ -2,7 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const http = require('http');
 const { Server } = require("socket.io");
-const cors = require('cors');
 const bodyParser = require('body-parser');
 
 const app = express();
@@ -41,12 +40,6 @@ io.on('connection', (socket) => {
     console.log('🔗 Admin Dashboard connected via Socket:', socket.id);
     socket.on('disconnect', () => console.log('❌ Admin Dashboard disconnected'));
 });
-
-app.use(cors({
-    origin: '*', // อนุญาตทุกโดเมน (เพื่อให้ Google Apps Script ยิงเข้ามาได้)
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
 
 // เริ่มรันเซิร์ฟเวอร์
 const PORT = process.env.PORT || 3000;
