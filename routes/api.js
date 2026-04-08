@@ -1,6 +1,5 @@
 const express = require('express');
 const axios = require('axios');
-const cors = require('cors');
 
 
 const GAS_URL = process.env.GAS_URL; // ใส่ URL ของคุณ
