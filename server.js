@@ -3,15 +3,19 @@ const express = require('express');
 const http = require('http');
 const { Server } = require("socket.io");
 const bodyParser = require('body-parser');
-const cors = require('cors');
+const cors = require('cors'); // นำเข้าโมดูล cors
 
+// 1. ประกาศสร้าง app และ server ก่อน! (ห้ามเอาอะไรมาคั่นก่อนบรรทัดนี้)
+const app = express();
+const server = http.createServer(app);
+
+// 2. ตั้งค่า CORS (ต้องอยู่หลังจาก const app = express() เสมอ)
 app.use(cors({
-    origin: "*", 
+    origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE"]
 }));
 
-const app = express();
-const server = http.createServer(app);
+// 3. ตั้งค่า Socket.io
 const io = new Server(server, {
     cors: {
         origin: "*",
@@ -24,23 +28,23 @@ const botHandler = require('./bot/botHandler');
 const apiRoutes = require('./routes/api');
 
 // ==========================================
-// 1. LINE Webhook (ต้องอยู่ก่อน Body Parser เสมอ!)
+// 4. LINE Webhook (ต้องอยู่ก่อน Body Parser เสมอ!)
 // ==========================================
 app.use('/webhook', botHandler.router);
 
 // ==========================================
-// 2. Middleware ทั่วไป & Static Files
+// 5. Middleware ทั่วไป & Static Files
 // ==========================================
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(express.static('public')); 
 
 // ==========================================
-// 3. Web APIs (ส่ง io เข้าไปเพื่อให้ API สั่งแจ้งเตือน Socket ได้)
+// 6. Web APIs (ส่ง io เข้าไปเพื่อให้ API สั่งแจ้งเตือน Socket ได้)
 // ==========================================
 app.use('/api', apiRoutes(io));
 
 // ==========================================
-// 4. Socket.io Connection
+// 7. Socket.io Connection
 // ==========================================
 io.on('connection', (socket) => {
     console.log('🔗 Admin Dashboard connected via Socket:', socket.id);
