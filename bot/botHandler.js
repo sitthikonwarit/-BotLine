@@ -10,7 +10,8 @@ const creds = require('../credentials.json');
 
 // --- LangChain & AI ---
 const { ChatOpenAI, OpenAIEmbeddings } = require('@langchain/openai');
-const { MemoryVectorStore } = require("langchain/vectorstores/memory"); // ปลดคอมเมนต์หรือเพิ่มบรรทัดนี้
+// ✅ แก้ไข: ใช้ require ปกติแทนการ import
+const { MemoryVectorStore } = require("langchain/vectorstores/memory"); 
 const { Document } = require('@langchain/core/documents');
 const { ChatPromptTemplate } = require('@langchain/core/prompts');
 
@@ -61,10 +62,10 @@ let chatPrompt;
 async function initializeBrain() {
     console.log("กำลังดาวน์โหลดข้อมูลผ่าน API จาก Dashboard เพื่อสร้างสมองให้บอท...");
     try {
-        const response = await fetch(DASHBOARD_API_URL);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-        const apiResult = await response.json();
+        // ✅ แก้ไข: ลบ await import ออก เพราะเรา require ไว้ด้านบนสุดแล้ว
+        const response = await axios.get(DASHBOARD_API_URL); // ใช้ axios แทน fetch เพื่อความชัวร์ใน Node
+        
+        const apiResult = response.data;
         if (!apiResult.success) throw new Error("API ดึงข้อมูลไม่สำเร็จ: " + apiResult.error);
 
         const { rooms, tenants, settings } = apiResult.data;
@@ -104,6 +105,7 @@ async function initializeBrain() {
 
         if (docs.length === 0) docs.push(new Document({ pageContent: "ยังไม่มีข้อมูลในระบบ", metadata: { source: "API" } }));
 
+        // ✅ ใช้งาน MemoryVectorStore ได้ทันที
         const vectorStore = await MemoryVectorStore.fromDocuments(docs, new OpenAIEmbeddings());
         vectorRetriever = vectorStore.asRetriever(15);
         chatModel = new ChatOpenAI({ modelName: "gpt-3.5-turbo", temperature: 0 });
