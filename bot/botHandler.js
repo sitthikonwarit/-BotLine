@@ -196,6 +196,11 @@ async function handleEvent(event) {
                   {
                     "type": "button", "style": "secondary",
                     "action": { "type": "message", "label": "🧾 ประวัติชำระล่าสุด", "text": "ดูประวัติบิล" }
+                  },
+                  // 🟢 [เพิ่มปุ่มใหม่ตรงนี้]
+                  {
+                    "type": "button", "style": "secondary", "color": "#1DB446",
+                    "action": { "type": "message", "label": "📊 เช็คยอดน้ำไฟ (Real-time)", "text": "เช็คยอดน้ำไฟ" }
                   }
                 ]
               }
@@ -373,6 +378,79 @@ async function handleEvent(event) {
             return client.replyMessage({
                 replyToken: event.replyToken,
                 messages: [{ type: 'text', text: 'ระบบมีปัญหาในการดึงข้อมูล กรุณาลองใหม่อีกครั้งครับ' }]
+            });
+        }
+    }
+
+    if (userMessage === 'เช็คยอดน้ำไฟ') {
+        try {
+            // 1. ยิง API ไปที่ GAS เพื่อเอา Room ID และข้อมูลบิลรอบล่าสุด
+            const gasRes = await axios.post(process.env.DASHBOARD_API_URL || process.env.GAS_URL, {
+                action: 'get_meter_for_bot',
+                userId: userId
+            });
+
+            if (!gasRes.data.success) {
+                return client.replyMessage({
+                    replyToken: event.replyToken,
+                    messages: [{ type: 'text', text: gasRes.data.message || 'ไม่พบข้อมูลห้องพักครับ' }]
+                });
+            }
+
+            const { roomId, roomNumber, lastRecord } = gasRes.data;
+
+            // 2. ยิง API ภายในเครื่องตัวเอง (localhost) เพื่อเอา Cache ของมิเตอร์ ESP32
+            const port = process.env.PORT || 3000;
+            const configRes = await axios.get(`http://localhost:${port}/api/live-meter-config`);
+            const liveDataRes = await axios.get(`http://localhost:${port}/api/live-meter-current-values`);
+
+            const modbusConfigs = configRes.data;
+            const liveReadings = liveDataRes.data.data;
+
+            // 3. หา Slave ID ของห้องนี้จาก Config
+            const electricConfig = modbusConfigs.find(c => String(c.roomId) === String(roomId) && (!c.type || c.type === 'electric'));
+            const waterConfig = modbusConfigs.find(c => String(c.roomId) === String(roomId) && c.type === 'water');
+
+            let replyText = `📊 ข้อมูลมิเตอร์ห้อง ${roomNumber}\nประจำเดือนปัจจุบัน\n\n`;
+
+            // --- คำนวณมิเตอร์ไฟ ---
+            if (electricConfig && liveReadings[electricConfig.slaveId]) {
+                const liveElec = parseFloat(liveReadings[electricConfig.slaveId].energy || 0); // เปลี่ยน .energy ตาม key จริงของ Payload HW คุณ
+                const lastElec = lastRecord && lastRecord.electricReading !== '-' ? parseFloat(lastRecord.electricReading) : 0;
+                const usageElec = (liveElec - lastElec).toFixed(2);
+
+                replyText += `⚡️ **มิเตอร์ไฟฟ้า**\n`;
+                replyText += `- บิลรอบที่แล้ว: ${lastElec} หน่วย\n`;
+                replyText += `- วิ่งถึงตอนนี้: ${liveElec.toFixed(1)} หน่วย\n`;
+                replyText += `- 🔺 ใช้ไปเดือนนี้: ${Math.max(0, usageElec)} หน่วย\n\n`;
+            } else {
+                replyText += `⚡️ มิเตอร์ไฟฟ้า: (ไม่ได้เชื่อมต่ออุปกรณ์)\n\n`;
+            }
+
+            // --- คำนวณมิเตอร์น้ำ ---
+            if (waterConfig && liveReadings[waterConfig.slaveId]) {
+                const liveWater = parseFloat(liveReadings[waterConfig.slaveId].water || 0); // เปลี่ยน .water ตาม key จริงของ Payload HW คุณ
+                const lastWater = lastRecord && lastRecord.waterReading !== '-' ? parseFloat(lastRecord.waterReading) : 0;
+                const usageWater = (liveWater - lastWater).toFixed(2);
+
+                replyText += `💧 **มิเตอร์น้ำ**\n`;
+                replyText += `- บิลรอบที่แล้ว: ${lastWater} หน่วย\n`;
+                replyText += `- วิ่งถึงตอนนี้: ${liveWater.toFixed(1)} หน่วย\n`;
+                replyText += `- 🔺 ใช้ไปเดือนนี้: ${Math.max(0, usageWater)} หน่วย\n`;
+            } else {
+                replyText += `💧 มิเตอร์น้ำ: (ไม่ได้เชื่อมต่ออุปกรณ์)\n`;
+            }
+
+            return client.replyMessage({
+                replyToken: event.replyToken,
+                messages: [{ type: 'text', text: replyText }]
+            });
+
+        } catch (error) {
+            console.error("Error fetching live meter for bot:", error.message);
+            return client.replyMessage({
+                replyToken: event.replyToken,
+                messages: [{ type: 'text', text: 'ระบบไม่สามารถดึงข้อมูลมิเตอร์แบบเรียลไทม์ได้ในขณะนี้ กรุณาลองใหม่อีกครั้งครับ' }]
             });
         }
     }
