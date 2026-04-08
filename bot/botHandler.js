@@ -10,7 +10,7 @@ const creds = require('../credentials.json');
 
 // --- LangChain & AI ---
 const { ChatOpenAI, OpenAIEmbeddings } = require('@langchain/openai');
-// const { MemoryVectorStore } = require("langchain/vectorstores/memory");
+const { MemoryVectorStore } = require("langchain/vectorstores/memory"); // ปลดคอมเมนต์หรือเพิ่มบรรทัดนี้
 const { Document } = require('@langchain/core/documents');
 const { ChatPromptTemplate } = require('@langchain/core/prompts');
 
@@ -61,7 +61,6 @@ let chatPrompt;
 async function initializeBrain() {
     console.log("กำลังดาวน์โหลดข้อมูลผ่าน API จาก Dashboard เพื่อสร้างสมองให้บอท...");
     try {
-        const { MemoryVectorStore } = await import("langchain/vectorstores/memory");
         const response = await fetch(DASHBOARD_API_URL);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
