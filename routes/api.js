@@ -178,6 +178,33 @@ module.exports = function (io) {
     });
 
 
+    router.delete('/live-meter-config/:slaveId', (req, res) => {
+        try {
+            const slaveId = parseInt(req.params.slaveId);
+            
+            // ตรวจสอบว่ามีอยู่หรือไม่
+            const index = modbusConfigurations.findIndex(c => c.slaveId === slaveId);
+            
+            if (index !== -1) {
+                // ลบออกจาก Array Config
+                modbusConfigurations.splice(index, 1);
+                
+                // (ทางเลือก) ลบออกจาก Cache ข้อมูลล่าสุดด้วย เพื่อไม่ให้มีข้อมูลขยะค้าง
+                if (currentMeterReadingsCache[slaveId]) {
+                    delete currentMeterReadingsCache[slaveId];
+                }
+
+                res.json({ success: true, message: `ลบการเชื่อมต่อ Slave ID: ${slaveId} เรียบร้อยแล้ว` });
+            } else {
+                res.status(404).json({ success: false, message: 'ไม่พบข้อมูลการจับคู่นี้' });
+            }
+        } catch (error) {
+            console.error("Error deleting meter config:", error.message);
+            res.status(500).json({ success: false, message: 'Internal Server Error' });
+        }
+    });
+
+
 
     return router;
 };
