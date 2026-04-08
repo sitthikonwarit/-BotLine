@@ -10,7 +10,6 @@ const creds = require('../credentials.json');
 
 // --- LangChain & AI ---
 const { ChatOpenAI, OpenAIEmbeddings } = require('@langchain/openai');
-// ✅ แก้ไข: ใช้ require ปกติแทนการ import
 const { MemoryVectorStore } = require("langchain/vectorstores/memory"); 
 const { Document } = require('@langchain/core/documents');
 const { ChatPromptTemplate } = require('@langchain/core/prompts');
@@ -62,8 +61,7 @@ let chatPrompt;
 async function initializeBrain() {
     console.log("กำลังดาวน์โหลดข้อมูลผ่าน API จาก Dashboard เพื่อสร้างสมองให้บอท...");
     try {
-        // ✅ แก้ไข: ลบ await import ออก เพราะเรา require ไว้ด้านบนสุดแล้ว
-        const response = await axios.get(DASHBOARD_API_URL); // ใช้ axios แทน fetch เพื่อความชัวร์ใน Node
+        const response = await axios.get(DASHBOARD_API_URL); 
         
         const apiResult = response.data;
         if (!apiResult.success) throw new Error("API ดึงข้อมูลไม่สำเร็จ: " + apiResult.error);
@@ -105,7 +103,6 @@ async function initializeBrain() {
 
         if (docs.length === 0) docs.push(new Document({ pageContent: "ยังไม่มีข้อมูลในระบบ", metadata: { source: "API" } }));
 
-        // ✅ ใช้งาน MemoryVectorStore ได้ทันที
         const vectorStore = await MemoryVectorStore.fromDocuments(docs, new OpenAIEmbeddings());
         vectorRetriever = vectorStore.asRetriever(15);
         chatModel = new ChatOpenAI({ modelName: "gpt-3.5-turbo", temperature: 0 });
@@ -199,7 +196,6 @@ async function handleEvent(event) {
                     "type": "button", "style": "secondary",
                     "action": { "type": "message", "label": "🧾 ประวัติชำระล่าสุด", "text": "ดูประวัติบิล" }
                   },
-                  // 🟢 [เพิ่มปุ่มใหม่ตรงนี้]
                   {
                     "type": "button", "style": "secondary", "color": "#1DB446",
                     "action": { "type": "message", "label": "📊 เช็คยอดน้ำไฟ (Real-time)", "text": "เช็คยอดน้ำไฟ" }
@@ -220,69 +216,52 @@ async function handleEvent(event) {
     // ==========================================
     if (userMessage === 'ดูข้อมูลส่วนตัว' || userMessage === 'ดูประวัติบิล') {
         try {
-            // ยิงไปถามข้อมูลจาก Google Apps Script
-            const response = await axios.post(process.env.DASHBOARD_API_URL || process.env.GAS_URL, {
-                action: 'get_tenant_profile_and_bills',
-                userId: userId
-            });
+            // 🟢 เพิ่ม Log เพื่อให้แอดมินก็อปปี้ LINE ID ไปวางในฐานข้อมูลได้
+            console.log(`\n🔍 [Debug] ลูกค้ากำลังขอดูข้อมูล | ชื่อไลน์: ${userName} | LINE User ID: ${userId}\n`);
 
+            const apiUrl = process.env.DASHBOARD_API_URL || process.env.GAS_URL;
+            const payload = { action: 'get_tenant_profile_and_bills', userId: userId };
+
+            // 🟢 ส่งข้อมูลทั้ง Body และ URL Parameters ป้องกัน GAS อ่านค่าไม่เจอ
+            const response = await axios.post(apiUrl, payload, { params: payload });
             const data = response.data;
 
             if (!data.success) {
                 return client.replyMessage({
                     replyToken: event.replyToken,
-                    messages: [{ type: 'text', text: 'ไม่พบข้อมูลในระบบ หรือคุณยังไม่ได้ผูกบัญชี กรุณาติดต่อแอดมินครับ' }]
+                    messages: [{ type: 'text', text: data.message || 'ไม่พบข้อมูลในระบบ หรือคุณยังไม่ได้ผูกบัญชี กรุณาติดต่อแอดมินครับ' }]
                 });
             }
 
             const profile = data.profile;
             const bills = data.bills;
 
-            // 🟢 [เพิ่มส่วนนี้] ตัวช่วยป้องกัน Error (ถ้าค่าว่างให้ใส่ "-")
             const safeStr = (val) => (val !== undefined && val !== null && String(val).trim() !== '') ? String(val) : '-';
 
             // --- กรณีเลือก "ดูข้อมูลส่วนตัว" ---
             if (userMessage === 'ดูข้อมูลส่วนตัว') {
-                
-                // 🟢 สร้างกล่องรายการเอกสาร
                 let documentComponents = [];
                 if (profile.pdfLinks && profile.pdfLinks.length > 0) {
                     documentComponents.push({ "type": "separator", "margin": "md" });
                     documentComponents.push({
-                        "type": "text",
-                        "text": "📄 เอกสารและสัญญา",
-                        "weight": "bold",
-                        "color": "#333333",
-                        "size": "sm",
-                        "margin": "md"
+                        "type": "text", "text": "📄 เอกสารและสัญญา", "weight": "bold",
+                        "color": "#333333", "size": "sm", "margin": "md"
                     });
                     
                     profile.pdfLinks.forEach(file => {
-                        // ชื่อปุ่มห้ามเกิน 40 ตัวอักษรตามกฎของ LINE
                         let fileName = file.name || "เปิดดูเอกสาร";
                         if (fileName.length > 35) fileName = fileName.substring(0, 35) + "...";
 
                         documentComponents.push({
-                            "type": "button",
-                            "style": "link",
-                            "height": "sm",
-                            "action": {
-                                "type": "uri",
-                                "label": fileName,
-                                "uri": file.url
-                            }
+                            "type": "button", "style": "link", "height": "sm",
+                            "action": { "type": "uri", "label": fileName, "uri": file.url }
                         });
                     });
                 } else {
-                    // ถ้าไม่มีเอกสาร
                     documentComponents.push({ "type": "separator", "margin": "md" });
                     documentComponents.push({
-                        "type": "text",
-                        "text": "ไม่พบเอกสารแนบในระบบ",
-                        "color": "#aaaaaa",
-                        "size": "xs",
-                        "align": "center",
-                        "margin": "md"
+                        "type": "text", "text": "ไม่พบเอกสารแนบในระบบ", "color": "#aaaaaa",
+                        "size": "xs", "align": "center", "margin": "md"
                     });
                 }
 
@@ -311,8 +290,6 @@ async function handleEvent(event) {
                                 { "type": "box", "layout": "horizontal", "contents": [{ "type": "text", "text": "เข้าพัก", "color": "#aaaaaa", "size": "sm", "flex": 1 }, { "type": "text", "text": safeStr(profile.checkInDate), "color": "#333333", "size": "sm", "flex": 2 }] },
                                 { "type": "box", "layout": "horizontal", "contents": [{ "type": "text", "text": "เริ่มสัญญา", "color": "#aaaaaa", "size": "sm", "flex": 1 }, { "type": "text", "text": safeStr(profile.contractStart), "color": "#333333", "size": "sm", "flex": 2 }] },
                                 { "type": "box", "layout": "horizontal", "contents": [{ "type": "text", "text": "สิ้นสุด", "color": "#aaaaaa", "size": "sm", "flex": 1 }, { "type": "text", "text": safeStr(profile.contractEnd), "color": "#DC3545", "size": "sm", "flex": 2 }] },
-                                
-                                // 🟢 นำกล่องเอกสารแนบมาต่อท้ายตรงนี้
                                 ...documentComponents 
                             ]
                         }
@@ -326,7 +303,6 @@ async function handleEvent(event) {
                 let billListComponents = [];
                 
                 if (bills && bills.length > 0) {
-                    // แสดงบิลสูงสุด 12 เดือนล่าสุด
                     bills.slice(0, 12).forEach((bill, index) => {
                         let statusText = bill.status === 'paid' ? '✅ ชำระแล้ว' : (bill.isOverdue ? '❌ ค้างชำระ' : '⏳ รอชำระ');
                         let statusColor = bill.status === 'paid' ? '#06C755' : (bill.isOverdue ? '#DC3545' : '#FFC107');
@@ -386,11 +362,13 @@ async function handleEvent(event) {
 
     if (userMessage === 'เช็คยอดน้ำไฟ') {
         try {
-            // 1. ยิง API ไปที่ GAS เพื่อเอา Room ID และข้อมูลบิลรอบล่าสุด
-            const gasRes = await axios.post(process.env.DASHBOARD_API_URL || process.env.GAS_URL, {
-                action: 'get_meter_for_bot',
-                userId: userId
-            });
+            console.log(`\n🔍 [Debug] ลูกค้าเช็คมิเตอร์ | ชื่อไลน์: ${userName} | LINE User ID: ${userId}\n`);
+
+            const apiUrl = process.env.DASHBOARD_API_URL || process.env.GAS_URL;
+            const payload = { action: 'get_meter_for_bot', userId: userId };
+
+            // 🟢 ส่งข้อมูลคลุมเผื่อ GAS อ่าน JSON ไม่ได้
+            const gasRes = await axios.post(apiUrl, payload, { params: payload });
 
             if (!gasRes.data.success) {
                 return client.replyMessage({
@@ -401,7 +379,6 @@ async function handleEvent(event) {
 
             const { roomId, roomNumber, lastRecord } = gasRes.data;
 
-            // 2. ยิง API ภายในเครื่องตัวเอง (localhost) เพื่อเอา Cache ของมิเตอร์ ESP32
             const port = process.env.PORT || 3000;
             const configRes = await axios.get(`http://localhost:${port}/api/live-meter-config`);
             const liveDataRes = await axios.get(`http://localhost:${port}/api/live-meter-current-values`);
@@ -409,15 +386,13 @@ async function handleEvent(event) {
             const modbusConfigs = configRes.data;
             const liveReadings = liveDataRes.data.data;
 
-            // 3. หา Slave ID ของห้องนี้จาก Config
             const electricConfig = modbusConfigs.find(c => String(c.roomId) === String(roomId) && (!c.type || c.type === 'electric'));
             const waterConfig = modbusConfigs.find(c => String(c.roomId) === String(roomId) && c.type === 'water');
 
             let replyText = `📊 ข้อมูลมิเตอร์ห้อง ${roomNumber}\nประจำเดือนปัจจุบัน\n\n`;
 
-            // --- คำนวณมิเตอร์ไฟ ---
             if (electricConfig && liveReadings[electricConfig.slaveId]) {
-                const liveElec = parseFloat(liveReadings[electricConfig.slaveId].energy || 0); // เปลี่ยน .energy ตาม key จริงของ Payload HW คุณ
+                const liveElec = parseFloat(liveReadings[electricConfig.slaveId].energy || 0); 
                 const lastElec = lastRecord && lastRecord.electricReading !== '-' ? parseFloat(lastRecord.electricReading) : 0;
                 const usageElec = (liveElec - lastElec).toFixed(2);
 
@@ -429,9 +404,8 @@ async function handleEvent(event) {
                 replyText += `⚡️ มิเตอร์ไฟฟ้า: (ไม่ได้เชื่อมต่ออุปกรณ์)\n\n`;
             }
 
-            // --- คำนวณมิเตอร์น้ำ ---
             if (waterConfig && liveReadings[waterConfig.slaveId]) {
-                const liveWater = parseFloat(liveReadings[waterConfig.slaveId].water || 0); // เปลี่ยน .water ตาม key จริงของ Payload HW คุณ
+                const liveWater = parseFloat(liveReadings[waterConfig.slaveId].water || 0); 
                 const lastWater = lastRecord && lastRecord.waterReading !== '-' ? parseFloat(lastRecord.waterReading) : 0;
                 const usageWater = (liveWater - lastWater).toFixed(2);
 
@@ -514,15 +488,13 @@ async function handleEvent(event) {
                 const relevantDocs = await vectorRetriever.invoke(userMessage);
                 const contextText = relevantDocs.map(doc => doc.pageContent).join("\n\n");
 
-                // 🟢 ดึงประวัติการคุยออกมา
                 let sessionData = activeSessions.get(userId);
-                if (sessionData === true) sessionData = { history: [] }; // ดักไว้เผื่อเป็นค่า true เดิม
+                if (sessionData === true) sessionData = { history: [] }; 
                 
                 const historyText = sessionData.history && sessionData.history.length > 0 
                     ? sessionData.history.join('\n') 
                     : "เพิ่งเริ่มการสนทนา";
 
-                // 🟢 ส่ง history เข้าไปใน Prompt
                 const formattedPrompt = await chatPrompt.formatMessages({
                     history: historyText,
                     context: contextText,
@@ -533,17 +505,14 @@ async function handleEvent(event) {
                 const response = await chatModel.invoke(formattedPrompt);
                 replyText = response.content;
 
-                // 🟢 บันทึกคำถามและคำตอบรอบนี้กลับเข้าไปในระบบความจำ
                 if(!sessionData.history) sessionData.history = [];
                 sessionData.history.push(`ลูกค้า: ${userMessage}`);
                 sessionData.history.push(`แอดมิน: ${replyText}`);
                 
-                // ให้จำแค่ 3 คู่ล่าสุด (6 ข้อความ) เพื่อป้องกัน Token ล้นและลดค่าใช้จ่าย
                 if (sessionData.history.length > 6) {
                     sessionData.history.splice(0, 2); 
                 }
                 activeSessions.set(userId, sessionData);
-                // ------------------------------------------
 
                 await logToSheet(userId, userMessage, replyText);
             } catch (error) {
@@ -560,6 +529,7 @@ async function handleEvent(event) {
 
     return Promise.resolve(null);
 }
+
 // ==========================================
 // Webhook Route
 // ==========================================
