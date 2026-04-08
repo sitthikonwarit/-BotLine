@@ -18,6 +18,7 @@ async function linkRichMenu(userId, richMenuId) {
 }
 
 let modbusConfigurations = [];
+let currentMeterReadingsCache = {};
 
 // ส่ง io เข้ามาเพื่อให้เรียกใช้ io.emit ได้
 module.exports = function (io) {
@@ -155,22 +156,25 @@ module.exports = function (io) {
     // ==========================================
     // 3. API รับข้อมูลดิบจาก ESP32 Hardware
     // ==========================================
-    // ESP32 จะต้องยิง HTTP POST มาที่พาร์ทนี้ พร้อมแนบ JSON
     router.post('/hw-meter-ingest', (req, res) => {
-        /*
-          ตัวอย่าง Payload ที่ ESP32 ต้องส่งมา:
-          { "slaveId": 1, "voltage": 225.4, "current": 4.2, "power": 0.94, "energy": 1054.2 }
-        */
         const meterData = req.body;
 
         if (!meterData || meterData.slaveId === undefined) {
             return res.status(400).json({ error: "Invalid Payload" });
         }
 
+        // ✅ [เพิ่มบรรทัดนี้] บันทึกข้อมูลล่าสุดลง Cache
+        currentMeterReadingsCache[meterData.slaveId] = meterData;
+
         // กระจายข้อมูลไปให้หน้าเว็บที่เปิด Live Meter อยู่ผ่าน Socket.io
         io.emit('live-meter-update', meterData);
 
         res.json({ success: true, message: "Data received" });
+    });
+
+    // ✅ [เพิ่ม API ใหม่นี้] สำหรับให้หน้าฟอร์มมาดึงข้อมูลล่าสุดทั้งหมดไปเติมอัตโนมัติ
+    router.get('/live-meter-current-values', (req, res) => {
+        res.json({ success: true, data: currentMeterReadingsCache });
     });
 
 
