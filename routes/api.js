@@ -1,6 +1,5 @@
 const express = require('express');
 const axios = require('axios');
-const cron = require('node-cron');
 
 
 const GAS_URL = process.env.GAS_URL; // ใส่ URL ของคุณ
@@ -202,62 +201,6 @@ module.exports = function (io) {
         } catch (error) {
             console.error("Error deleting meter config:", error.message);
             res.status(500).json({ success: false, message: 'Internal Server Error' });
-        }
-    });
-
-    cron.schedule('0 * * * *', async () => {
-        console.log("🕒 Running Hourly Cron Job: Saving Meter History to GAS...");
-        
-        try {
-            const historyDataArray = [];
-            const timestamp = new Date().toISOString();
-
-            // จับคู่ข้อมูลจาก Config กับ Cache ปัจจุบัน
-            modbusConfigurations.forEach(config => {
-                const liveData = currentMeterReadingsCache[config.slaveId];
-                if (liveData) {
-                    // ถ้าน้ำเก็บ Flow, ถ้าไฟเก็บ Energy
-                    const recordValue = config.type === 'water' ? liveData.flow : liveData.energy;
-                    
-                    if (recordValue !== undefined) {
-                        historyDataArray.push({
-                            timestamp: timestamp,
-                            roomId: config.roomId,
-                            type: config.type,
-                            value: recordValue
-                        });
-                    }
-                }
-            });
-
-            if (historyDataArray.length > 0) {
-                // ส่งข้อมูลเข้า Google Apps Script (เปลี่ยน action ให้ตรงกับ doPost ของคุณ)
-                const response = await axios.post(GAS_URL, { 
-                    action: 'save_meter_history', 
-                    payload: historyDataArray 
-                });
-                console.log(`✅ Saved ${historyDataArray.length} records to Google Sheets.`, response.data);
-            } else {
-                console.log("ℹ️ No active live data to save.");
-            }
-        } catch (error) {
-            console.error("❌ Cron Job Error:", error.message);
-        }
-    });
-
-    // API สำหรับให้ Frontend ดึงกราฟประวัติ
-    router.get('/live-meter-history/:roomId/:type', async (req, res) => {
-        try {
-            const { roomId, type } = req.params;
-            const response = await axios.post(GAS_URL, { 
-                action: 'get_meter_history', 
-                roomId: roomId,
-                type: type
-            });
-            res.json({ success: true, data: response.data });
-        } catch (error) {
-            console.error("Error fetching history:", error.message);
-            res.status(500).json({ success: false, data: [] });
         }
     });
 
