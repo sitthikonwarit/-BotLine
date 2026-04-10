@@ -19,6 +19,22 @@ async function linkRichMenu(userId, richMenuId) {
 
 let modbusConfigurations = [];
 let currentMeterReadingsCache = {};
+let logQueue = [];
+
+setInterval(async () => {
+    if (logQueue.length === 0) return;
+    
+    const logsToSend = [...logQueue];
+    logQueue = []; // ล้างคิว
+    
+    try {
+        await axios.post(GAS_URL, { action: 'save_live_logs_batch', payload: { logs: logsToSend } });
+        console.log(`✅ Saved ${logsToSend.length} meter logs to Google Sheets`);
+    } catch (error) {
+        console.error("❌ Failed to save logs to sheets. Queueing back.", error.message);
+        logQueue = [...logsToSend, ...logQueue]; // เอากลับเข้าคิวถ้าพัง
+    }
+}, 5 * 60 * 1000);
 
 // ส่ง io เข้ามาเพื่อให้เรียกใช้ io.emit ได้
 module.exports = function (io) {
@@ -135,24 +151,29 @@ module.exports = function (io) {
         }
     });
 
-    router.get('/live-meter-config', (req, res) => {
-        res.json(modbusConfigurations);
-    });
-
-    router.post('/live-meter-config', (req, res) => {
-        const { roomId, slaveId, type } = req.body;
-        
-        // เช็คว่ามี Slave ID นี้อยู่แล้วไหม ถ้ามีให้อัปเดต
-        const existingIndex = modbusConfigurations.findIndex(c => c.slaveId === slaveId);
-        if (existingIndex >= 0) {
-            modbusConfigurations[existingIndex] = { roomId, slaveId, type };
-        } else {
-            modbusConfigurations.push({ roomId, slaveId, type });
+    router.get('/live-meter-config', async (req, res) => {
+        try {
+            const response = await axios.post(GAS_URL, { action: 'get_live_configs' });
+            res.json(response.data);
+        } catch (error) {
+            console.error("Error fetching configs:", error.message);
+            res.status(500).json({ error: 'Failed to fetch' });
         }
-
-        res.json({ success: true, data: modbusConfigurations });
     });
 
+    router.post('/live-meter-config', async (req, res) => {
+        const { roomId, slaveId, type } = req.body;
+        try {
+            const response = await axios.post(GAS_URL, { 
+                action: 'save_live_config', 
+                payload: { roomId, slaveId, type } 
+            });
+            res.json(response.data);
+        } catch (error) {
+            console.error("Error saving config:", error.message);
+            res.status(500).json({ success: false });
+        }
+    });
     // ==========================================
     // 3. API รับข้อมูลดิบจาก ESP32 Hardware
     // ==========================================
@@ -163,11 +184,15 @@ module.exports = function (io) {
             return res.status(400).json({ error: "Invalid Payload" });
         }
 
-        // ✅ [เพิ่มบรรทัดนี้] บันทึกข้อมูลล่าสุดลง Cache
+        // 3.1 อัปเดต Cache ของ Node.js ให้แสดงผลเร็วๆ บน UI
         currentMeterReadingsCache[meterData.slaveId] = meterData;
 
-        // กระจายข้อมูลไปให้หน้าเว็บที่เปิด Live Meter อยู่ผ่าน Socket.io
+        // 3.2 บรอดแคสต์ผ่าน Socket.io ให้หน้าบ้านดูกราฟ/เลขวิ่งทันที
         io.emit('live-meter-update', meterData);
+
+        // 3.3 โยนเข้าคิวสำหรับบันทึกลง Google Sheets เพื่อดูประวัติย้อนหลัง
+        meterData.timestamp = new Date().toISOString();
+        logQueue.push(meterData);
 
         res.json({ success: true, message: "Data received" });
     });
@@ -178,33 +203,24 @@ module.exports = function (io) {
     });
 
 
-    router.delete('/live-meter-config/:slaveId', (req, res) => {
+    router.delete('/live-meter-config/:slaveId', async (req, res) => {
         try {
             const slaveId = parseInt(req.params.slaveId);
+            const response = await axios.post(GAS_URL, { 
+                action: 'delete_live_config', 
+                payload: { slaveId } 
+            });
             
-            // ตรวจสอบว่ามีอยู่หรือไม่
-            const index = modbusConfigurations.findIndex(c => c.slaveId === slaveId);
-            
-            if (index !== -1) {
-                // ลบออกจาก Array Config
-                modbusConfigurations.splice(index, 1);
-                
-                // (ทางเลือก) ลบออกจาก Cache ข้อมูลล่าสุดด้วย เพื่อไม่ให้มีข้อมูลขยะค้าง
-                if (currentMeterReadingsCache[slaveId]) {
-                    delete currentMeterReadingsCache[slaveId];
-                }
-
-                res.json({ success: true, message: `ลบการเชื่อมต่อ Slave ID: ${slaveId} เรียบร้อยแล้ว` });
-            } else {
-                res.status(404).json({ success: false, message: 'ไม่พบข้อมูลการจับคู่นี้' });
+            if (currentMeterReadingsCache[slaveId]) {
+                delete currentMeterReadingsCache[slaveId];
             }
+            
+            res.json(response.data);
         } catch (error) {
             console.error("Error deleting meter config:", error.message);
             res.status(500).json({ success: false, message: 'Internal Server Error' });
         }
     });
-
-    
 
 
 
