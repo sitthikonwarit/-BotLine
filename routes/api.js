@@ -28,11 +28,14 @@ setInterval(async () => {
     logQueue = []; // ล้างคิว
     
     try {
-        await axios.post(GAS_URL, { action: 'save_live_logs_batch', payload: { logs: logsToSend } });
+        await axios.post(GAS_URL, { 
+            action: 'save_live_logs_batch', 
+            payload: { logs: logsToSend } // <-- สังเกตตรงนี้
+        });
         console.log(`✅ Saved ${logsToSend.length} meter logs to Google Sheets`);
     } catch (error) {
         console.error("❌ Failed to save logs to sheets. Queueing back.", error.message);
-        logQueue = [...logsToSend, ...logQueue]; // เอากลับเข้าคิวถ้าพัง
+        logQueue = [...logsToSend, ...logQueue]; 
     }
 }, 10000);
 
