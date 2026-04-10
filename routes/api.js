@@ -34,7 +34,7 @@ setInterval(async () => {
         console.error("❌ Failed to save logs to sheets. Queueing back.", error.message);
         logQueue = [...logsToSend, ...logQueue]; // เอากลับเข้าคิวถ้าพัง
     }
-}, 5 * 60 * 1000);
+}, 10000);
 
 // ส่ง io เข้ามาเพื่อให้เรียกใช้ io.emit ได้
 module.exports = function (io) {
