@@ -230,7 +230,8 @@ module.exports = function (io) {
             const { userId } = req.body;
             if (!userId) return res.status(400).json({ success: false, message: "No User ID" });
 
-            // 1. ถาม GAS ว่า User นี้อยู่ห้องไหน (ใช้ action เดิมที่คุณมีอยู่แล้ว)
+            // 1. ถาม GAS ว่า User นี้อยู่ห้องไหน 
+            // (ใช้ GAS_URL ที่คุณประกาศไว้ด้านบนไฟล์ api.js)
             const gasRes = await axios.post(GAS_URL, { action: 'get_meter_for_bot', userId: userId });
             
             if (!gasRes.data.success) {
@@ -247,7 +248,8 @@ module.exports = function (io) {
             const electricConfig = modbusConfigs.find(c => String(c.roomId) === String(roomId) && (!c.type || c.type === 'electric'));
             const waterConfig = modbusConfigs.find(c => String(c.roomId) === String(roomId) && c.type === 'water');
 
-            // 4. ดึงค่าล่าสุดจาก Cache (เพื่อให้เปิดหน้าเว็บมาปุ๊บ เห็นเลขเลย ไม่ต้องรอรอบ Socket วิ่ง)
+            // 4. ดึงค่าล่าสุดจาก Cache ของ Node.js
+            // (ใช้ currentMeterReadingsCache ที่มีอยู่แล้วใน api.js)
             const elecLive = electricConfig && currentMeterReadingsCache[electricConfig.slaveId] 
                              ? currentMeterReadingsCache[electricConfig.slaveId].energy : 0;
             const waterLive = waterConfig && currentMeterReadingsCache[waterConfig.slaveId] 
@@ -260,7 +262,7 @@ module.exports = function (io) {
                 waterSlaveId: waterConfig ? waterConfig.slaveId : null,
                 initialElec: elecLive,
                 initialWater: waterLive,
-                lastRecord: lastRecord // ส่งบิลรอบที่แล้วไปให้ดูเปรียบเทียบด้วย
+                lastRecord: lastRecord 
             });
 
         } catch (error) {
