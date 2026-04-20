@@ -36,7 +36,7 @@ app.use('/webhook', botHandler.router);
 // 5. Middleware ทั่วไป & Static Files
 // ==========================================
 app.use(bodyParser.json({ limit: '50mb' }));
-app.use(express.static('public')); 
+app.use(express.static(path.join(__dirname, 'public')));
 
 // ==========================================
 // 6. Web APIs (ส่ง io เข้าไปเพื่อให้ API สั่งแจ้งเตือน Socket ได้)
