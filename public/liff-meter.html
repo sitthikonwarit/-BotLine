@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>มิเตอร์ห้องพัก Real-time</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
+        .card { background: #fff; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .header { text-align: center; margin-bottom: 20px; }
+        .meter-title { font-size: 14px; color: #6c757d; margin-bottom: 5px; }
+        .meter-value { font-size: 32px; font-weight: bold; margin: 0; }
+        .elec-value { color: #d68c00; }
+        .water-value { color: #0dcaf0; }
+        .status { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: #dc3545; margin-right: 5px; }
+        .status.active { background-color: #198754; box-shadow: 0 0 8px #198754; }
+        #loading { text-align: center; margin-top: 50px; font-size: 18px; color: #666; }
+    </style>
+</head>
+<body>
+
+    <div id="loading">กำลังโหลดข้อมูล... ⏳</div>
+
+    <div id="content" style="display: none;">
+        <div class="header">
+            <h2>ห้อง <span id="room-number">-</span></h2>
+            <p><span id="connection-status" class="status"></span> สถานะการเชื่อมต่อ: <span id="status-text">รอการเชื่อมต่อ</span></p>
+        </div>
+
+        <div class="card border-warning">
+            <div class="meter-title">⚡️ มิเตอร์ไฟฟ้า (kWh)</div>
+            <p class="meter-value elec-value" id="val-elec">0.00</p>
+        </div>
+
+        <div class="card border-info">
+            <div class="meter-title">💧 มิเตอร์น้ำ (m³)</div>
+            <p class="meter-value water-value" id="val-water">0.00</p>
+        </div>
+    </div>
+
+    <script>
+        // ⚠️ ต้องแก้ไข 2 บรรทัดนี้ให้ตรงกับระบบของคุณ
+        const LIFF_ID = "ใส่_LIFF_ID_ของคุณที่ได้จาก_LINE_Developer";
+        const NODE_SERVER_URL = "https://your-domain.com"; // URL ของ Node.js ที่เปิด Socket.io ไว้
+
+        let myElectricSlaveId = null;
+        let myWaterSlaveId = null;
+
+        async function main() {
+            try {
+                await liff.init({ liffId: LIFF_ID });
+                if (!liff.isLoggedIn()) {
+                    liff.login();
+                    return;
+                }
+
+                const profile = await liff.getProfile();
+                const userId = profile.userId;
+
+                // 1. เรียก API ที่เราเพิ่งสร้างไปใน Node.js
+                const res = await fetch(`${NODE_SERVER_URL}/api/liff-tenant-meter`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: userId })
+                });
+                
+                const data = await res.json();
+
+                if (!data.success) {
+                    document.getElementById('loading').innerText = data.message || "ไม่พบข้อมูลห้องพักของคุณ";
+                    return;
+                }
+
+                // 2. เก็บ Slave ID และแสดงค่าเริ่มต้น
+                myElectricSlaveId = data.electricSlaveId;
+                myWaterSlaveId = data.waterSlaveId;
+                
+                document.getElementById('room-number').innerText = data.roomNumber;
+                if (data.initialElec) document.getElementById('val-elec').innerText = parseFloat(data.initialElec).toFixed(2);
+                if (data.initialWater) document.getElementById('val-water').innerText = parseFloat(data.initialWater).toFixed(2);
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+
+                // 3. เชื่อมต่อ Socket.io
+                connectSocket();
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('loading').innerText = "เกิดข้อผิดพลาดในการโหลดข้อมูล";
+            }
+        }
+
+        function connectSocket() {
+            const socket = io(NODE_SERVER_URL);
+
+            socket.on('connect', () => {
+                document.getElementById('connection-status').classList.add('active');
+                document.getElementById('status-text').innerText = "ออนไลน์ (Real-time)";
+            });
+
+            socket.on('disconnect', () => {
+                document.getElementById('connection-status').classList.remove('active');
+                document.getElementById('status-text').innerText = "ขาดการเชื่อมต่อ";
+            });
+
+            // 4. รับค่าอัปเดตและกรองเฉพาะห้องตัวเอง
+            socket.on('live-meter-update', (meterData) => {
+                if (meterData.slaveId === myElectricSlaveId) {
+                    document.getElementById('val-elec').innerText = parseFloat(meterData.energy).toFixed(2);
+                }
+                if (meterData.slaveId === myWaterSlaveId) {
+                    document.getElementById('val-water').innerText = parseFloat(meterData.water).toFixed(2);
+                }
+            });
+        }
+
+        main();
+    </script>
+</body>
+</html>
