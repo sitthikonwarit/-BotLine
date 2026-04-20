@@ -230,26 +230,18 @@ module.exports = function (io) {
             const { userId } = req.body;
             if (!userId) return res.status(400).json({ success: false, message: "No User ID" });
 
-            // 1. ถาม GAS ว่า User นี้อยู่ห้องไหน 
-            // (ใช้ GAS_URL ที่คุณประกาศไว้ด้านบนไฟล์ api.js)
             const gasRes = await axios.post(GAS_URL, { action: 'get_meter_for_bot', userId: userId });
-            
             if (!gasRes.data.success) {
                 return res.json({ success: false, message: gasRes.data.message || 'ไม่พบข้อมูลห้องพัก' });
             }
 
             const { roomId, roomNumber, lastRecord } = gasRes.data;
-
-            // 2. ดึง Config ของมิเตอร์ทั้งหมดจาก GAS
             const configRes = await axios.post(GAS_URL, { action: 'get_live_configs' });
             const modbusConfigs = configRes.data || [];
 
-            // 3. หา Slave ID ของไฟฟ้าและน้ำ สำหรับห้องนี้
             const electricConfig = modbusConfigs.find(c => String(c.roomId) === String(roomId) && (!c.type || c.type === 'electric'));
             const waterConfig = modbusConfigs.find(c => String(c.roomId) === String(roomId) && c.type === 'water');
 
-            // 4. ดึงค่าล่าสุดจาก Cache ของ Node.js
-            // (ใช้ currentMeterReadingsCache ที่มีอยู่แล้วใน api.js)
             const elecLive = electricConfig && currentMeterReadingsCache[electricConfig.slaveId] 
                              ? currentMeterReadingsCache[electricConfig.slaveId].energy : 0;
             const waterLive = waterConfig && currentMeterReadingsCache[waterConfig.slaveId] 
@@ -264,7 +256,6 @@ module.exports = function (io) {
                 initialWater: waterLive,
                 lastRecord: lastRecord 
             });
-
         } catch (error) {
             console.error("LIFF Meter Error:", error.message);
             res.status(500).json({ success: false, message: 'Server Error' });
